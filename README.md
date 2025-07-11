@@ -13,16 +13,19 @@
 - CSSフレームワーク: Tailwind CSS
 
 **バックエンド:** Python / Flask 3.1.1  
+<details>
+  <summary> 使用ライブラリ</summary>
+
+- Flask 3.1.1（Webフレームワーク）  
+- Flask-SQLAlchemy（ORM：DB操作）  
+- Flask-WTF（フォームバリデーション）  
+- WTForms（フォーム定義）  
+- SQLAlchemy（DBライブラリ） 
+</details>
+
 - コード解析 / フォーマッター: flake8, black  
 - テストフレームワーク: pytest, unittest  
 - DB: SQLite  
-
-- 使用ライブラリ: 
-  - Flask 3.1.1（Webフレームワーク）  
-  - Flask-SQLAlchemy（ORM：DB操作）  
-  - Flask-WTF（フォームバリデーション）  
-  - WTForms（フォーム定義）  
-  - SQLAlchemy（DBライブラリ）
 
 **インフラ:** AWS(Route53 / Certificate Manager / ALB / VPC / ECR / ECS Fargate / RDS MySQL / S3) / Nginx / Vercel
 
