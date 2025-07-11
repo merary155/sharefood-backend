@@ -12,7 +12,7 @@
 - テストフレームワーク: Jest / React Testing Library
 - CSSフレームワーク: Tailwind CSS
 
-**バックエンド:** Python / Flask 3.1.1  
+**バックエンド:** Python 3.10.6 / Flask 3.1.1  
 <details>
   <summary> 使用ライブラリ</summary>
 
