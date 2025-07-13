@@ -1,3 +1,4 @@
+import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -5,7 +6,11 @@ from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
-import os
+from . import models
+from . import routes
+from flask_sqlalchemy import SQLAlchemy
+
+app.register_blueprint(routes.bp)
 
 # --- 拡張機能のインスタンスを作成 ---
 db = SQLAlchemy()    # SQLAlchemyを利用するためのオブジェクト
@@ -51,8 +56,3 @@ db.init_app(app)       # SQLAlchemyをFlaskアプリに結びつける
 migrate.init_app(app, db) # マイグレーション機能をFlaskアプリとDBに結びつける
 jwt.init_app(app)      # JWTの機能をFlaskアプリに結びつける
 
-# ここからルーティングやモデルのインポートなどをするのが普通
-# 例:
-# from . import models
-# from . import routes
-# app.register_blueprint(routes.bp)
