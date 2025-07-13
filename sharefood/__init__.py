@@ -46,10 +46,11 @@ def create_app():
     with app.app_context():
         # --- ルーティングとモデルのインポート ---
         # ファクトリ内でインポートすることで循環参照を避けます。
-        from .routes import register_route
+        from .routes import register_route, login_route
         from . import models
 
         # ブループリントの登録
         app.register_blueprint(register_route.bp)
+        app.register_blueprint(login_route.bp)
     
     return app

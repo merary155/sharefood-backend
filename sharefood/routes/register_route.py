@@ -6,7 +6,7 @@ from ..models import User
 from .. import db
 
 # Blueprintを作成
-# 'api'はBlueprintの名前、__name__は現在のモジュール名、url_prefixでURLの先頭に/api/v1を付けます
+# 'api'はBlueprintの名前、__name__は現在のモジュール名、url_prefixでURLの先頭に/api/v1を付与
 bp = Blueprint('register_route', __name__, url_prefix='/api/v1')
 
 @bp.route('/status')

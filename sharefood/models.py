@@ -26,10 +26,13 @@ class User(db.Model, UserMixin):
     raise AttributeError('password is not a readable attribute')
   
   @password.setter
+  # こっちはアカウント作成時にパスワードをハッシュ化する関数
   def password(self, plain_text_password):
     # Userの中のpassword_hashに代入するからself.password_hashにする    
+    # この段階でUser.password_hash関数が呼び出されてハッシュ化する
     self.password_hash = bcrypt.generate_password_hash(plain_text_password).decode('utf-8')
 
+  # こっちはログイン時にパスワードをハッシュ化する関数、上のハッシュ化パスワードと照合する
   def check_password(self, attempted_password):
     return bcrypt.check_password_hash(self.password_hash, attempted_password)
   
