@@ -7,7 +7,7 @@
 食品廃棄を減らし、持続可能な社会を目指すフードシェアリングプラットフォームです。
 
 ## 仕様技術一覧
-**フロントエンド** React.js 18.2.0/
+**フロントエンド** React.js 18.2.0/ TypeScript 5.8.3
 - フォーマッター: Prettier
 - テストフレームワーク: Jest / React Testing Library
 - CSSフレームワーク: Tailwind CSS
