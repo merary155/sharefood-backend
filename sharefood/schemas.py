@@ -24,3 +24,5 @@ class RegisterSchema(Schema):
         raise ValidationError("パスワードには少なくとも1つの小文字が必要です。")
     if not re.search(r'[0-9]', value):
         raise ValidationError("パスワードには少なくとも1つの数字が必要です。")
+    
+# 今後はここにバリデーションチェック追加予定
