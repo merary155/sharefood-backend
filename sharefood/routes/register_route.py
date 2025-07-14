@@ -1,9 +1,8 @@
 from flask import Blueprint, jsonify, request
-# 今後の実装で必要になるもの
-# from werkzeug.security import generate_password_hash, check_password_hash
-# from flask_jwt_extended import create_access_token
+from marshmallow import ValidationError
 from ..models import User
 from .. import db
+from ..schemas import RegisterSchema
 
 # Blueprintを作成
 # 'api'はBlueprintの名前、__name__は現在のモジュール名、url_prefixでURLの先頭に/api/v1を付与
