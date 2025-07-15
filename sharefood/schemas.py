@@ -25,4 +25,17 @@ class RegisterSchema(Schema):
     if not re.search(r'[0-9]', value):
         raise ValidationError("パスワードには少なくとも1つの数字が必要です。")
     
-# 今後はここにバリデーションチェック追加予定
+class LoginSchema(Schema):
+  email = fields.Email(
+    required = True,
+    error_messages={
+      "invalid": "有効なメールアドレスを入力してください。", 
+      "required": "メールアドレスは必須です。"
+    }
+  )
+
+  password = fields.Str(
+    required = True,
+    error_messages={"required":"パスワードは必須です。"},
+    load_only = True
+  )

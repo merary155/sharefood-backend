@@ -16,29 +16,34 @@ def status():
 # ユーザー登録API
 @bp.route('/register', methods=['POST'])
 def register():
-  data = request.get_json() # フロントエンドから送信されたJSONデータを取得
-  # 必須項目がJSONデータに含まれているか簡単なチェック
-  if not data or not 'username' in data or not 'email' in data or not 'password' in data:
-  # 項目が不足している場合は、400 Bad Requestエラーを返します
-    return jsonify({'message': '必須項目が不足しています'}), 400
-  
+  # ここでmarshmallowのSchemaを使用
+  schema = RegisterSchema()
+  try:
+    # request.get_json() で取得したデータをschema.load() に渡す
+    # バリデーションに成功すると、validated_dataが返される
+    validated_data = schema.load(request.get_json())
+  except ValidationError as err:
+    # バリデーションエラーが発生した場合
+    return jsonify({'message': '入力データが無効です', 'errors': err.messages}), 400
+
   # メールアドレスが既にデータベースに存在するかチェック
-  if User.query.filter_by(email_address=data['email']).first():
-    # 存在する場合は、409 Conflictエラーを返します
+  # validated_data['email'] を使用
+  if User.query.filter_by(email_address=validated_data['email']).first():
     return jsonify({'message': 'このメールアドレスは既に使用されています'}), 409
 
   # 新しいユーザーのインスタンスを作成
+  # validated_data['username'], validated_data['email'] を使用
   new_user = User(
-      username=data['username'],
-      email_address=data['email']
+      username=validated_data['username'],
+      email_address=validated_data['email']
   )
   # models.pyで定義したセッター(@password.setter)により、
   # パスワードは自動的にハッシュ化されて保存される
-  new_user.password = data['password']
+  # validated_data['password'] を使用
+  new_user.password = validated_data['password']
 
   # データベースセッションに新しいユーザーを追加して、変更をコミット（保存）
   db.session.add(new_user)
   db.session.commit()
 
-  # 成功メッセージとステータスコード201 Createdを返します
   return jsonify({'message': 'ユーザーが正常に作成されました'}), 201
