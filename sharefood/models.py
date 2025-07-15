@@ -1,5 +1,5 @@
-from . import db, login_manager, bcrypt # __init__.pyで定義したインスタンスをインポート
-from flask_login import UserMixin
+from . import db, bcrypt # __init__.pyで定義したインスタンスをインポート
+from marshmallow import Schema, fields
 
 # nullable そのcolumnに(null)を許すかどうか(許す→True)
 # unique そのcolumnが他の行との重複を禁止にするかどうか→重複禁止(True)
@@ -9,11 +9,7 @@ from flask_login import UserMixin
 # Userが親（relationshipで所有を表現）、Itemが子（ForeignKeyで参照を表現）になる関係性
 # ForeignKeyの指定は「'クラス名（小文字）.id'」の形式にする（SQLAlchemyの規約）
 
-@login_manager.user_loader
-def load_user(user_id):
-  return User.query.get(int(user_id))
-
-class User(db.Model, UserMixin):
+class User(db.Model):
   id = db.Column(db.Integer(), primary_key=True)
   username = db.Column(db.String(30), nullable=False)
   email_address = db.Column(db.String(120), unique=True, nullable=False)
@@ -38,3 +34,19 @@ class User(db.Model, UserMixin):
   
   def __repr__(self):
     return f'<User {self.username}>'
+  
+
+class Item(db.Model):
+  id = db.Column(db.Integer, primary_key=True)
+  name = db.Column(db.String(50), nullable=False)                    # 食品名
+  description = db.Column(db.String(255))                            # 説明文
+  quantity = db.Column(db.Integer, nullable=False, default=1)        # 個数や数量
+  unit = db.Column(db.String(10), default='個')                      # 単位（個, 袋, 本 など）
+  expiration_date = db.Column(db.Date)                               # 賞味期限
+  location = db.Column(db.String(120))                               # 受け渡し場所
+  created_at = db.Column(db.DateTime, server_default=db.func.now())  # 登録日時
+  is_available = db.Column(db.Boolean, default=True)                 # 受け渡し可能かどうか
+  # Userとのリレーションを追加
+  user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False) 
+  user = db.relationship('User', backref=db.backref('items', lazy=True))
+
