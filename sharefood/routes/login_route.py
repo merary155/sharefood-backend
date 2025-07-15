@@ -30,6 +30,6 @@ def login():
   return jsonify({
     'message': 'ログインに成功しました',
     'access_token': access_token,
-    'user': user_schema.dump(user) # user_schema = UserSchema()をschemas.pyで設定
+    'user': user_schema.dump(user) # user_schema = UserSchema()をschemas.pyで設定、dump()でオブジェクトを辞書に変換
   }), 200
 

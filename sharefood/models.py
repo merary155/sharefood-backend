@@ -34,3 +34,19 @@ class User(db.Model):
   
   def __repr__(self):
     return f'<User {self.username}>'
+  
+
+class Item(db.Model):
+  id = db.Column(db.Integer, primary_key=True)
+  name = db.Column(db.String(50), nullable=False)                    # 食品名
+  description = db.Column(db.String(255))                            # 説明文
+  quantity = db.Column(db.Integer, nullable=False, default=1)        # 個数や数量
+  unit = db.Column(db.String(10), default='個')                      # 単位（個, 袋, 本 など）
+  expiration_date = db.Column(db.Date)                               # 賞味期限
+  location = db.Column(db.String(120))                               # 受け渡し場所
+  created_at = db.Column(db.DateTime, server_default=db.func.now())  # 登録日時
+  is_available = db.Column(db.Boolean, default=True)                 # 受け渡し可能かどうか
+  # Userとのリレーションを追加
+  user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False) 
+  user = db.relationship('User', backref=db.backref('items', lazy=True))
+
