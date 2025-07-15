@@ -1,8 +1,9 @@
 from flask import Blueprint, jsonify, request
-from flask_login import login_user, logout_user, login_required
-from ..schemas import LoginSchema
+from ..schemas import LoginSchema, user_schema
 from ..models import User
-from .. import db, bcrypt
+from .. import bcrypt
+from marshmallow import ValidationError
+from flask_jwt_extended import create_access_token
 
 bp = Blueprint('login_route', __name__, url_prefix='/api/v1')
 
@@ -18,24 +19,17 @@ def login():
   except ValidationError as err:
     # バリデーションエラーが発生した場合
     return jsonify({'message': '入力データが無効です', 'errors': err.messages}), 400
-    
-  # 3つの条件のうちどれか1つでも当てはまれば return される
-  if not validated_data or 'email' not in validated_data or 'password' not in validated_data:
-    return jsonify({'message': 'メールアドレスとパスワードは必須です'}), 400
   
   user = User.query.filter_by(email_address=validated_data['email']).first()
   # ユーザーが存在しない、または関数'user.check_password'を起動してハッシュ化パスワードが一致しない場合
   if not user or not user.check_password(validated_data['password']):
     return jsonify({'message': 'メールアドレスまたはパスワードが正しくありません'}), 401
   
-  login_user(user)
+  # JWTトークンを生成
+  access_token = create_access_token(identity=user.id)
   return jsonify({
     'message': 'ログインに成功しました',
-    'user': {
-      'id': user.id,
-      'username': user.username,
-      'email': user.email_address
-    }
+    'access_token': access_token,
+    'user': user_schema.dump(user) # user_schema = UserSchema()をschemas.pyで設定
   }), 200
 
-# JWT追加予定

@@ -1,5 +1,5 @@
-from . import db, login_manager, bcrypt # __init__.pyで定義したインスタンスをインポート
-from flask_login import UserMixin
+from . import db, bcrypt # __init__.pyで定義したインスタンスをインポート
+from marshmallow import Schema, fields
 
 # nullable そのcolumnに(null)を許すかどうか(許す→True)
 # unique そのcolumnが他の行との重複を禁止にするかどうか→重複禁止(True)
@@ -9,11 +9,7 @@ from flask_login import UserMixin
 # Userが親（relationshipで所有を表現）、Itemが子（ForeignKeyで参照を表現）になる関係性
 # ForeignKeyの指定は「'クラス名（小文字）.id'」の形式にする（SQLAlchemyの規約）
 
-@login_manager.user_loader
-def load_user(user_id):
-  return User.query.get(int(user_id))
-
-class User(db.Model, UserMixin):
+class User(db.Model):
   id = db.Column(db.Integer(), primary_key=True)
   username = db.Column(db.String(30), nullable=False)
   email_address = db.Column(db.String(120), unique=True, nullable=False)

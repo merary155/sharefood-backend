@@ -26,7 +26,7 @@ class RegisterSchema(Schema):
         raise ValidationError("パスワードには少なくとも1つの数字が必要です。")
     
 class LoginSchema(Schema):
-  email = fields.Email(
+  email = fields.Email(     # 値がメールアドレス形式であることをチェックするフィールド型。@example.com がないと弾かれる
     required = True,
     error_messages={
       "invalid": "有効なメールアドレスを入力してください。", 
@@ -39,3 +39,13 @@ class LoginSchema(Schema):
     error_messages={"required":"パスワードは必須です。"},
     load_only = True
   )
+
+class UserSchema(Schema):
+  # dump_only=True を設定することで、このフィールドは読み取り専用になります。
+  # APIのレスポンスには含まれますが、リクエストボディで送られてきても無視されます。
+  # IDはサーバー側で自動採番されるため、クライアントから変更されるべきではないからです。
+  id = fields.Int(dump_only=True)
+  username = fields.Str()
+  email = fields.Email(attribute='email_address')
+
+user_schema = UserSchema()
