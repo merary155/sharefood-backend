@@ -66,7 +66,7 @@ class ItemSchema(Schema):
   unit = fields.Str(load_default='個', dump_default='個')
   expiration_date = fields.Date() # YYYY-MM-DD形式
   location = fields.Str(validate=validate.Length(max=120, error="場所は120文字以下で入力してください。"))
-  is_available = fields.Bool(default=True)
+  is_available = fields.Bool(load_default=True, dump_default=True)
 
   # user_id は直接公開せず、代わりにネストしたユーザー情報を含める
   # これにより、APIのレスポンスに「誰が出品したか」という情報を含められる
