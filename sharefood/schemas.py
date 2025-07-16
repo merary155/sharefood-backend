@@ -49,7 +49,7 @@ class UserSchema(Schema):
   # IDはサーバー側で自動採番されるため、クライアントから変更されるべきではないからです。
   id = fields.Int(dump_only=True)
   username = fields.Str()
-  email = fields.Email(attribute='email_address')
+  email_address = fields.Email()
 
 user_schema = UserSchema()
 
