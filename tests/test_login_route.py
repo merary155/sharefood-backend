@@ -8,7 +8,7 @@ from sharefood.config import TestingConfig # テスト用の設定クラスを�
 @pytest.fixture
 def client():
     # テスト設定でFlaskアプリケーションを作成
-    app = create_app(TestingConfig) 
+    app = create_app(config_class=TestingConfig)
     # Flaskインスタンスの test_client() を with で使ってテスト用クライアントを取得、as + 変数
     with app.test_client() as client:
         # アプリケーションコンテキスト内でDBを初期化
@@ -17,7 +17,8 @@ def client():
 
             # テストユーザーを事前に作成
             hashed_password = bcrypt.generate_password_hash("testpassword").decode('utf-8')
-            test_user = User(username="testuser", email_address="test@example.com", password=hashed_password)
+            test_user = User(username="testuser", email_address="test@example.com")
+            test_user.password = "testpassword"  
             db.session.add(test_user)
             db.session.commit()
         yield client # テスト関数にクライアントを渡す
