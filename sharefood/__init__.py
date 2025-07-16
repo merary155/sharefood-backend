@@ -13,7 +13,7 @@ cors = CORS()        # frontendとbackendを繋げるためのCORS設定用オ�
 jwt = JWTManager()   # JWT（JSON Web Token）を扱うオブジェクト
 bcrypt = Bcrypt()    # パスワードをハッシュ化するオブジェクト
 
-def create_app(config_class=Config):
+def create_app(testing=False, config_class=Config):
     """アプリケーションファクトリ関数"""
     app = Flask(__name__)
 

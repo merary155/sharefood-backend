@@ -63,7 +63,7 @@ class ItemSchema(Schema):
   name = fields.Str(required=True, validate=validate.Length(min=1, max=50, error="食品名は1文字以上50文字以下で入力してください。"))
   description = fields.Str(validate=validate.Length(max=255, error="説明文は255文字以下で入力してください。"))
   quantity = fields.Int(required=True, validate=validate.Range(min=1, error="数量は1以上で入力してください。"))
-  unit = fields.Str(default='個')
+  unit = fields.Str(load_default='個', dump_default='個')
   expiration_date = fields.Date() # YYYY-MM-DD形式
   location = fields.Str(validate=validate.Length(max=120, error="場所は120文字以下で入力してください。"))
   is_available = fields.Bool(default=True)
