@@ -8,7 +8,8 @@ from SF.config import TestingConfig # テスト用の設定クラスをインポ
 @pytest.fixture
 def client():
     # テスト設定でFlaskアプリケーションを作成
-    app = create_app(TestingConfig) # ★TestingConfigを渡す★
+    app = create_app(TestingConfig) 
+    # Flaskインスタンスの test_client() を with で使ってテスト用クライアントを取得、as + 変数
     with app.test_client() as client:
         # アプリケーションコンテキスト内でDBを初期化
         with app.app_context():
