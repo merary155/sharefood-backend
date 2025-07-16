@@ -1,8 +1,8 @@
 import pytest
 import json
-from SF import create_app, db, bcrypt # __init__.py から create_app をインポート
-from SF.models import User # Userモデルをインポート
-from SF.config import TestingConfig # テスト用の設定クラスをインポート
+from sharefood import create_app, db, bcrypt # __init__.py から create_app をインポート
+from sharefood.models import User # Userモデルをインポート
+from sharefood.config import TestingConfig # テスト用の設定クラスをインポート
 
 # pytestのフィクスチャを使って、テストクライアントとDBのセットアップ・ティアダウンを自動化
 @pytest.fixture
