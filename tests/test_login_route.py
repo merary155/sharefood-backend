@@ -17,7 +17,7 @@ def client():
 
             # テストユーザーを事前に作成
             hashed_password = bcrypt.generate_password_hash("testpassword").decode('utf-8')
-            test_user = User(email_address="test@example.com", password=hashed_password)
+            test_user = User(username="testuser", email_address="test@example.com", password=hashed_password)
             db.session.add(test_user)
             db.session.commit()
         yield client # テスト関数にクライアントを渡す
@@ -102,5 +102,3 @@ class TestLoginRoute:
         data = response.get_json()
         assert data['message'] == '入力データが無効です'
         assert 'email' in data['errors']
-
-
