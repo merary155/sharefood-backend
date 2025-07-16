@@ -6,6 +6,7 @@ from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from datetime import timedelta
 from flask_bcrypt import Bcrypt
+from .config import Config
 
 # --- 拡張機能のインスタンスを作成 ---
 db = SQLAlchemy()    # SQLAlchemyを利用するためのオブジェクト
