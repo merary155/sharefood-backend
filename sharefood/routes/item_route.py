@@ -23,9 +23,9 @@ def create_item():
 
   # 新しいItemオブジェクトを作成
   new_item = Item(
-      name=validated_data['name'],
-      quantity=validated_data['quantity'],
-      user_id=current_user_id # 出品者としてログインユーザーのIDを設定
+    name=validated_data['name'],
+    quantity=validated_data['quantity'],
+    user_id=current_user_id # 出品者としてログインユーザーのIDを設定
   )
   # オプショナルなフィールドも設定
   if 'description' in validated_data:
