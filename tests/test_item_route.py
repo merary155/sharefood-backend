@@ -1,31 +1,7 @@
 import pytest
 import json
-from sharefood import create_app, db
+from sharefood import db
 from sharefood.models import Item, User
-from sharefood.config import TestingConfig
-from flask_jwt_extended import create_access_token
-
-@pytest.fixture
-def client():
-  app = create_app(config_class=TestingConfig)
-  with app.test_client() as client:
-    with app.app_context():
-      db.create_all()
-    yield client
-    with app.app_context():
-      db.session.remove()
-      db.drop_all()
-
-@pytest.fixture
-def auth_header(client):
-  """テスト用のユーザー作成とアクセストークン発行"""
-  with client.application.app_context():
-    user = User(username="testuser", email_address="test@example.com")
-    user.password = "Password123"
-    db.session.add(user)
-    db.session.commit()
-    access_token = create_access_token(identity=user.id)
-    return {"Authorization": f"Bearer {access_token}"}
 
 class TestItemRoute:
   def test_create_item_success(self, client, auth_header):
@@ -47,6 +23,13 @@ class TestItemRoute:
     assert data['item']['name'] == "リンゴ"
     assert data['item']['quantity'] == 10
     assert data['item']['description'] == "新鮮なリンゴです"
+
+    # データベースに正しく保存されたかを確認
+    with client.application.app_context():
+      user = User.query.filter_by(email_address="test@example.com").first()
+      item = Item.query.filter_by(name="リンゴ").first()
+      assert item is not None
+      assert item.user_id == user.id
 
   def test_create_item_missing_required(self, client, auth_header):
     """必須フィールドnameやquantityがない場合にエラーとなること"""
