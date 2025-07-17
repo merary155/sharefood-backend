@@ -18,13 +18,13 @@ class RegisterSchema(Schema):
   )
 
   @validates("password")
-  def validate_password_strength(self, value):
+  def validate_password_strength(self, value, data_key=None):
     if not re.search(r'[A-Z]', value):
-        raise ValidationError("パスワードには少なくとも1つの大文字が必要です。")
+      raise ValidationError("パスワードには少なくとも1つの大文字が必要です。")
     if not re.search(r'[a-z]', value):
-        raise ValidationError("パスワードには少なくとも1つの小文字が必要です。")
+      raise ValidationError("パスワードには少なくとも1つの小文字が必要です。")
     if not re.search(r'[0-9]', value):
-        raise ValidationError("パスワードには少なくとも1つの数字が必要です。")
+      raise ValidationError("パスワードには少なくとも1つの数字が必要です。")
 
 # --- Loginのスキーマ ---    
 class LoginSchema(Schema):
