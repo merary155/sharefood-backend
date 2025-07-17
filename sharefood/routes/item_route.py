@@ -52,7 +52,7 @@ def get_item(item_id):
 # --- アイテム編集 ---
 @bp.route('/<int:item_id>', methods=['PUT', 'PATCH'])
 @jwt_required()
-def update_item(item_id):
+def update_item(item_id): # この引数はURLから取得される
   item = Item.query.get_or_404(item_id)
   current_user_id = get_jwt_identity()
   if item.user_id != current_user_id:
@@ -72,7 +72,7 @@ def update_item(item_id):
 # --- アイテム削除 ---
 @bp.route('/<int:item_id>', methods=['DELETE'])
 @jwt_required()
-def delete_item(item_id):
+def delete_item(item_id): # この引数はURLから取得される
   item = Item.query.get_or_404(item_id)
   current_user_id = get_jwt_identity()
   if item.user_id != current_user_id:
@@ -85,7 +85,7 @@ def delete_item(item_id):
 # --- アイテム画像アップロード ---
 @bp.route('/<int:item_id>/image', methods=['POST'])
 @jwt_required()
-def upload_item_image(item_id):
+def upload_item_image(item_id): # この引数はURLから取得される
   item = Item.query.get_or_404(item_id)
   current_user_id = get_jwt_identity()
   if item.user_id != current_user_id:
