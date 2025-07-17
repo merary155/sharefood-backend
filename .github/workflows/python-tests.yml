@@ -1,0 +1,42 @@
+name: Python CI/CD
+
+on:
+  push:
+    branches:
+      - main # mainブランチへのプッシュ時に実行
+      - develop # developブランチへのプッシュ時に実行
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  build:
+    runs-on: ubuntu-latest # テストを実行するOS環境
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3 # リポジトリのコードをチェックアウト
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9' # 使用するPythonのバージョンを指定
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        # テストに必要な追加パッケージがあればここでインストール
+        pip install pytest Flask SQLAlchemy Fla # これらはrequirements.txtにあるはずですが、念のため
+
+    - name: Run tests with pytest
+      run: |
+        # 環境変数の設定 (テスト時に必要な場合)
+        # export FLASK_APP=your_flask_app # アプリケーションのエントリポイントに応じて
+        # export FLASK_ENV=testing # テスト環境であることを示す
+
+        # pytestを実行
+        # pytestの実行コマンドは、テストファイルの場所やpytest.iniの設定によって調整
+        # 例: testsディレクトリ内のテストを実行
+        pytest tests/

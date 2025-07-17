@@ -1,10 +1,8 @@
-import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
-from datetime import timedelta
 from flask_bcrypt import Bcrypt
 from .config import Config
 
@@ -15,26 +13,12 @@ cors = CORS()        # frontendとbackendを繋げるためのCORS設定用オ�
 jwt = JWTManager()   # JWT（JSON Web Token）を扱うオブジェクト
 bcrypt = Bcrypt()    # パスワードをハッシュ化するオブジェクト
 
-def create_app():
+def create_app(config_class=Config):
     """アプリケーションファクトリ関数"""
     app = Flask(__name__)
-    # basedirはファイルがあるディレクトリの絶対パスを取得している
-    basedir = os.path.abspath(os.path.dirname(__file__))
 
-    # --- データベースファイルのパスを設定 ---
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'app.db')
-    # SQLAlchemyの追跡機能は不要なのでオフ
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-    # JWTのためにSECRET_KEYも設定
-    # JWTは一度ログインすれば署名付きトークンを発行し、有効期限内なら再ログイン不要になる
-    # そのおかげでYoutube,chatGPT等のサイトでログイン状態が維持される
-    app.config['SECRET_KEY'] = '64b0bb69cfbb45b39b5c1dba'
-
-    # JWT専用の秘密鍵も設定（JWTの署名用）
-    app.config['JWT_SECRET_KEY'] = 'your-jwt-super-secret-key'
-    # JWTのトークン期限設定
-    app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(weeks=2) 
+    # --- ここで渡されたconfig_classから設定を読み込む ---
+    app.config.from_object(config_class)
 
     # --- 拡張機能の初期化 ---
     # ここで拡張機能をFlaskアプリに結びつける
