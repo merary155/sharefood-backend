@@ -13,8 +13,7 @@ class TestItemRoute:
     }
     response = client.post(
       '/api/v1/items/',
-      data=json.dumps(payload),
-      content_type='application/json',
+      json=payload,
       headers=auth_header
     )
     data = response.get_json()
@@ -38,8 +37,7 @@ class TestItemRoute:
     }
     response = client.post(
       '/api/v1/items/',
-      data=json.dumps(payload),
-      content_type='application/json',
+      json=payload,
       headers=auth_header
     )
     data = response.get_json()
@@ -56,8 +54,7 @@ class TestItemRoute:
     }
     response = client.post(
       '/api/v1/items/',
-      data=json.dumps(payload),
-      content_type='application/json'
+      json=payload
     )
     assert response.status_code == 401
 
