@@ -41,7 +41,7 @@ class TestItemRoute:
       headers=auth_header
     )
     data = response.get_json()
-    assert response.status_code == 400
+    assert response.status_code == 422
     assert '入力データが無効です' in data['message']
     assert 'name' in data['errors']
     assert 'quantity' in data['errors']
@@ -86,7 +86,7 @@ class TestItemRoute:
       }
       response = client.post('/api/v1/items/', json=payload, headers=auth_header)
       data = response.get_json()
-      assert response.status_code == 400
+      assert response.status_code == 422
       assert "quantity" in data["errors"]
       assert "数量は1以上で入力してください。" in data["errors"]["quantity"]
 
@@ -100,7 +100,7 @@ class TestItemRoute:
       }
       response = client.post('/api/v1/items/', json=payload, headers=auth_header)
       data = response.get_json()
-      assert response.status_code == 400
+      assert response.status_code == 422
       assert "name" in data["errors"]
       assert "食品名は1文字以上50文字以下で入力してください。" in data["errors"]["name"]
 
