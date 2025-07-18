@@ -43,17 +43,31 @@ def create_item():
 
   return jsonify({'message': '商品が正常に出品されました', 'item': item_schema.dump(new_item)}), 201
 
-@bp.route('/', methods=['GET'])
-def get_items():
-  all_items = Item.query.order_by(Item.created_at.desc()).all()
-  # items_schema (many=True) を使ってリストをシリアライズ
-  return jsonify({'items': items_schema.dump(all_items)}), 200
-
-# --- アイテム詳細取得 ---
+# --- アイテムを1件のみ詳細取得 ---
 @bp.route('/<int:item_id>', methods=['GET'])
 def get_item(item_id):
   item = Item.query.get_or_404(item_id)
   return jsonify({'item': item_schema.dump(item)}), 200
+
+# --- アイテム一覧表示・絞り込み機能 ---
+@bp.route('/', methods=['GET'])
+def get_items():
+  query = Item.query
+
+  # 絞り込み条件をクエリパラメータから取得
+  name = request.args.get('name')
+  is_available = request.args.get('is_available')
+
+  if name:
+    query = query.filter(Item.name.ilike(f'%{name}%'))
+  if is_available is not None:
+    if is_available.lower() == 'true':
+      query = query.filter(Item.is_available.is_(True))
+    elif is_available.lower() == 'false':
+      query = query.filter(Item.is_available.is_(False))
+
+  items = query.order_by(Item.created_at.desc()).all()
+  return jsonify({'items': items_schema.dump(items)}), 200
 
 # --- アイテム編集 ---
 @bp.route('/<int:item_id>', methods=['PUT', 'PATCH'])
@@ -119,20 +133,3 @@ def upload_item_image(item_id): # この引数はURLから取得される
   db.session.commit()
 
   return jsonify({'message': '画像をアップロードしました', 'image_path': save_path}), 200
-  query = Item.query
-
-  # 絞り込み条件をクエリパラメータから取得
-  name = request.args.get('name')
-  is_available = request.args.get('is_available')
-
-  if name:
-    query = query.filter(Item.name.ilike(f'%{name}%'))
-  if is_available is not None:
-    if is_available.lower() == 'true':
-      query = query.filter(Item.is_available.is_(True))
-    elif is_available.lower() == 'false':
-      query = query.filter(Item.is_available.is_(False))
-
-  items = query.order_by(Item.created_at.desc()).all()
-
-  return jsonify({'items': items_schema.dump(items)}), 200
