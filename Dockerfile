@@ -16,10 +16,17 @@ RUN pip install --no-cache-dir -r requirements.txt
 # プロジェクトのファイルを作業ディレクトリにコピーします
 COPY . .
 
+# --- 非rootユーザーの作成と利用 ---
+# セキュリティ向上のため、専用の非rootユーザーを作成してアプリケーションを実行します
+RUN groupadd -r appuser && useradd --no-log-init -r -g appuser appuser
+
+# アプリケーションを実行するユーザーを切り替えます
+USER appuser
+
 # --- ポートの公開 ---
 # Flaskアプリケーションがリッスンするポートを公開します
 EXPOSE 5000
 
 # --- アプリケーションの実行コマンド ---
 # コンテナが起動したときに、Gunicornを使ってアプリケーションを実行します
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "wsgi:app"]
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "main:app"]
