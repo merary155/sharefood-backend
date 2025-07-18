@@ -1,5 +1,9 @@
 import re
+from typing import Required
 from marshmallow import Schema, fields, validate, ValidationError, validates
+
+# UserとItemのインスタンスのみをここで生成してるのはほかの場所で使いまわすから
+# RegisterとLoginは使う場所が限定されてるのでそのスコープ内でインスタンスを生成する
 
 # --- Registerのスキーマ ---   
 class RegisterSchema(Schema):
@@ -18,6 +22,7 @@ class RegisterSchema(Schema):
   )
 
   @validates("password")
+  # 第2引数'data_key'は追加でチェックしたいものがある場合、デフォルトはNone（無し）
   def validate_password_strength(self, value, data_key=None):
     if not re.search(r'[A-Z]', value):
       raise ValidationError("パスワードには少なくとも1つの大文字が必要です。")
@@ -31,8 +36,8 @@ class LoginSchema(Schema):
   email = fields.Email(     # 値がメールアドレス形式であることをチェックするフィールド型。@example.com がないと弾かれる
     required = True,
     error_messages={
-      "invalid": "有効なメールアドレスを入力してください。", 
-      "required": "メールアドレスは必須です。"
+      "invalid": "有効なメールアドレスを入力してください。",  # 入力ないときはこのメッセージ
+      "required": "メールアドレスは必須です。"              # 入力あって形式が違ったときはこのメッセージ
     }
   )
 
@@ -44,9 +49,9 @@ class LoginSchema(Schema):
 
 # --- Userのスキーマ ---
 class UserSchema(Schema):
-  # dump_only=True を設定することで、このフィールドは読み取り専用になります。
-  # APIのレスポンスには含まれますが、リクエストボディで送られてきても無視されます。
-  # IDはサーバー側で自動採番されるため、クライアントから変更されるべきではないからです。
+  # dump_only=True を設定することで、このフィールドは読み取り専用になる
+  # APIのレスポンスには含まれますが、リクエストボディで送られてきても無視される
+  # IDはサーバー側で自動採番されるため、クライアントから変更されるべきではないため
   id = fields.Int(dump_only=True)
   username = fields.Str()
   email_address = fields.Email()

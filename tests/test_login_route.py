@@ -4,7 +4,7 @@ from sharefood import create_app, db, bcrypt # __init__.py から create_app を
 from sharefood.models import User # Userモデルをインポート
 from sharefood.config import TestingConfig # テスト用の設定クラスをインポート
 
-# pytestのフィクスチャを使って、テストクライアントとDBのセットアップ・ティアダウンを自動化
+# テスト環境の準備と片付けを自動化
 @pytest.fixture
 def client():
     # テスト設定でFlaskアプリケーションを作成

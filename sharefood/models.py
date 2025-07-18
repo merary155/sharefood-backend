@@ -13,7 +13,7 @@ class User(db.Model):
   id = db.Column(db.Integer(), primary_key=True)
   username = db.Column(db.String(30), nullable=False)
   email_address = db.Column(db.String(120), unique=True, nullable=False)
-  password_hash = db.Column(db.String(60), nullable=False)
+  password_hash = db.Column(db.String(60), nullable=False) # bcryptによってハッシュ化されたパスワードは60文字
 
   # ()が不要になり、関数を変数のように読み取れる
   # ただしここでは読み取りは禁止し、アクセスすると例外を出す
