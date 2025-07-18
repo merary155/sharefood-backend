@@ -1,5 +1,4 @@
 import re
-from typing import Required
 from marshmallow import Schema, fields, validate, ValidationError, validates
 
 # UserとItemのインスタンスのみをここで生成してるのはほかの場所で使いまわすから
