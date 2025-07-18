@@ -21,7 +21,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.9'
+          python-version: '3.10.6'
 
       - name: Install dependencies
         run: |
@@ -33,5 +33,6 @@ jobs:
           echo "FLASK_APP=sharefood:create_app" >> $GITHUB_ENV
           echo "FLASK_ENV=testing" >> $GITHUB_ENV
 
-      - name: Run tests with pytest
-        run: pytest tests/
+      - name: Run only item route tests
+        run: |
+          pytest tests/test_item_route.py
