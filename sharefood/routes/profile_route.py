@@ -9,7 +9,7 @@ bp = Blueprint('profile_route', __name__, url_prefix='/api/v1')
 @jwt_required() # ログインしている（有効なトークンを持っている）ユーザーのみアクセス可能
 def profile():
   # トークンからユーザーID（ログイン時に設定したidentity）を取得
-  current_user_id = get_jwt_identity()
+  current_user_id = int(get_jwt_identity())
   user = User.query.get_or_404(current_user_id, description='ユーザーが見つかりません')
 
   return jsonify({

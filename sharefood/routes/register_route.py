@@ -27,15 +27,15 @@ def register():
     return jsonify({'message': '入力データが無効です', 'errors': err.messages}), 400
 
   # メールアドレスが既にデータベースに存在するかチェック
-  # validated_data['email'] を使用
-  if User.query.filter_by(email_address=validated_data['email']).first():
+  # validated_data['email_address'] を使用
+  if User.query.filter_by(email_address=validated_data['email_address']).first():
     return jsonify({'message': 'このメールアドレスは既に使用されています'}), 409
 
   # 新しいユーザーのインスタンスを作成
-  # validated_data['username'], validated_data['email'] を使用
+  # validated_data['username'], validated_data['email_address'] を使用
   new_user = User(
       username=validated_data['username'],
-      email_address=validated_data['email']
+      email_address=validated_data['email_address']
   )
   # models.pyで定義したセッター(@password.setter)により、
   # パスワードは自動的にハッシュ化されて保存される

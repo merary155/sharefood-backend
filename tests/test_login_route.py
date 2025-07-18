@@ -1,14 +1,14 @@
 import pytest
 import json
-from SF import create_app, db, bcrypt # __init__.py から create_app をインポート
-from SF.models import User # Userモデルをインポート
-from SF.config import TestingConfig # テスト用の設定クラスをインポート
+from sharefood import create_app, db, bcrypt # __init__.py から create_app をインポート
+from sharefood.models import User # Userモデルをインポート
+from sharefood.config import TestingConfig # テスト用の設定クラスをインポート
 
-# pytestのフィクスチャを使って、テストクライアントとDBのセットアップ・ティアダウンを自動化
+# テスト環境の準備と片付けを自動化
 @pytest.fixture
 def client():
     # テスト設定でFlaskアプリケーションを作成
-    app = create_app(TestingConfig) 
+    app = create_app(config_class=TestingConfig)
     # Flaskインスタンスの test_client() を with で使ってテスト用クライアントを取得、as + 変数
     with app.test_client() as client:
         # アプリケーションコンテキスト内でDBを初期化
@@ -17,7 +17,8 @@ def client():
 
             # テストユーザーを事前に作成
             hashed_password = bcrypt.generate_password_hash("testpassword").decode('utf-8')
-            test_user = User(email_address="test@example.com", password=hashed_password)
+            test_user = User(username="testuser", email_address="test@example.com")
+            test_user.password = "testpassword"  
             db.session.add(test_user)
             db.session.commit()
         yield client # テスト関数にクライアントを渡す
@@ -33,7 +34,7 @@ class TestLoginRoute:
         response = client.post(
             '/api/v1/login',
             data=json.dumps({
-                'email': 'test@example.com',
+                'email_address': 'test@example.com',
                 'password': 'testpassword'
             }),
             content_type='application/json'
@@ -51,7 +52,7 @@ class TestLoginRoute:
         response = client.post(
             '/api/v1/login',
             data=json.dumps({
-                'email': 'test@example.com',
+                'email_address': 'test@example.com',
                 'password': 'wrongpassword'
             }),
             content_type='application/json'
@@ -65,7 +66,7 @@ class TestLoginRoute:
         response = client.post(
             '/api/v1/login',
             data=json.dumps({
-                'email': 'nonexistent@example.com',
+                'email_address': 'nonexistent@example.com',
                 'password': 'anypassword'
             }),
             content_type='application/json'
@@ -87,13 +88,13 @@ class TestLoginRoute:
         assert response.status_code == 400
         data = response.get_json()
         assert data['message'] == '入力データが無効です'
-        assert 'email' in data['errors']
+        assert 'email_address' in data['errors']
 
         # emailが不正な形式の場合
         response = client.post(
             '/api/v1/login',
             data=json.dumps({
-                'email': 'invalid-email-format',
+                'email_address': 'invalid-email-format',
                 'password': 'testpassword'
             }),
             content_type='application/json'
@@ -101,6 +102,4 @@ class TestLoginRoute:
         assert response.status_code == 400
         data = response.get_json()
         assert data['message'] == '入力データが無効です'
-        assert 'email' in data['errors']
-
-
+        assert 'email_address' in data['errors']
