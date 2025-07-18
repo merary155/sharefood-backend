@@ -74,13 +74,16 @@ def get_items():
 @jwt_required()
 def update_item(item_id): # この引数はURLから取得される
   item = Item.query.get_or_404(item_id)
+  
   current_user_id = int(get_jwt_identity())
+  
   if item.user_id != current_user_id:
     return jsonify({'message': '権限がありません'}), 403
 
   try:
     validated_data = item_schema.load(request.get_json(), partial=True)
   except ValidationError as err:
+
     return jsonify({'message': '入力データが無効です', 'errors': err.messages}), 422
 
   for key, value in validated_data.items():
@@ -94,7 +97,9 @@ def update_item(item_id): # この引数はURLから取得される
 @jwt_required()
 def delete_item(item_id): # この引数はURLから取得される
   item = Item.query.get_or_404(item_id)
+
   current_user_id = int(get_jwt_identity())
+  
   if item.user_id != current_user_id:
     return jsonify({'message': '権限がありません'}), 403
 
@@ -107,11 +112,14 @@ def delete_item(item_id): # この引数はURLから取得される
 @jwt_required()
 def upload_item_image(item_id): # この引数はURLから取得される
   item = Item.query.get_or_404(item_id)
+
   current_user_id = int(get_jwt_identity())
+
   if item.user_id != current_user_id:
     return jsonify({'message': '権限がありません'}), 403
 
   if 'image' not in request.files:
+
     return jsonify({'message': '画像ファイルがありません'}), 422
 
   image = request.files['image']
