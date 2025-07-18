@@ -41,7 +41,7 @@ def create_item():
   db.session.add(new_item)
   db.session.commit()
 
-  return jsonify({'message': '商品が正常に出品されました', 'item': item_schema.dump(new_item)}), 201
+  return jsonify({'message': '食品が正常に出品されました', 'item': item_schema.dump(new_item)}), 201
 
 # --- アイテムを1件のみ詳細取得 ---
 @bp.route('/<int:item_id>', methods=['GET'])
