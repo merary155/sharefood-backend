@@ -18,7 +18,6 @@ class TestItemRoute:
       headers=auth_header
     )
     data = response.get_json()
-    print("レスポンスJSON:", data)  # ← ここを追加
     assert response.status_code == 201
     assert data['message'] == '食品が正常に出品されました'
     assert data['item']['name'] == "リンゴ"

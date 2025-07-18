@@ -19,7 +19,7 @@ def create_item():
     return jsonify({'message': '入力データが無効です', 'errors': err.messages}), 422
 
   # 現在ログインしているユーザーのIDを取得
-  current_user_id = get_jwt_identity()
+  current_user_id = int(get_jwt_identity())
 
   # 新しいItemオブジェクトを作成
   new_item = Item(
@@ -74,7 +74,7 @@ def get_items():
 @jwt_required()
 def update_item(item_id): # この引数はURLから取得される
   item = Item.query.get_or_404(item_id)
-  current_user_id = get_jwt_identity()
+  current_user_id = int(get_jwt_identity())
   if item.user_id != current_user_id:
     return jsonify({'message': '権限がありません'}), 403
 
@@ -94,7 +94,7 @@ def update_item(item_id): # この引数はURLから取得される
 @jwt_required()
 def delete_item(item_id): # この引数はURLから取得される
   item = Item.query.get_or_404(item_id)
-  current_user_id = get_jwt_identity()
+  current_user_id = int(get_jwt_identity())
   if item.user_id != current_user_id:
     return jsonify({'message': '権限がありません'}), 403
 
@@ -107,7 +107,7 @@ def delete_item(item_id): # この引数はURLから取得される
 @jwt_required()
 def upload_item_image(item_id): # この引数はURLから取得される
   item = Item.query.get_or_404(item_id)
-  current_user_id = get_jwt_identity()
+  current_user_id = int(get_jwt_identity())
   if item.user_id != current_user_id:
     return jsonify({'message': '権限がありません'}), 403
 

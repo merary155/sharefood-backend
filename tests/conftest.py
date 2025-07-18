@@ -24,5 +24,5 @@ def auth_header(client):
     user.password = "Password123"
     db.session.add(user)
     db.session.commit()
-    access_token = create_access_token(identity=user.id)
+    access_token = create_access_token(identity=str(user.id))
     return {"Authorization": f"Bearer {access_token}"}
