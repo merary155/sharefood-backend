@@ -65,12 +65,12 @@ class ItemSchema(Schema):
 
   # 書き込み・読み取り可能フィールド（バリデーションルールも設定）
   name = fields.Str(required=True, validate=validate.Length(min=1, max=50, error="食品名は1文字以上50文字以下で入力してください。"))
-  description = fields.Str(validate=validate.Length(max=255, error="説明文は255文字以下で入力してください。"))
+  description = fields.Str(allow_none=True, validate=validate.Length(max=255, error="説明文は255文字以下で入力してください。"))
   quantity = fields.Int(required=True, validate=validate.Range(min=1, error="数量は1以上で入力してください。"))
   image_path = fields.Str(dump_only=True) # 画像パスは読み取り専用
   unit = fields.Str(load_default='個', dump_default='個') # 単位
-  expiration_date = fields.Date() # YYYY-MM-DD形式
-  location = fields.Str(validate=validate.Length(max=120, error="場所は120文字以下で入力してください。"))
+  expiration_date = fields.Date(allow_none=True) # YYYY-MM-DD形式
+  location = fields.Str(allow_none=True, validate=validate.Length(max=120, error="場所は120文字以下で入力してください。"))
   is_available = fields.Bool(load_default=True, dump_default=True)
 
   # user_id は直接公開せず、代わりにネストしたユーザー情報を含める
