@@ -16,7 +16,7 @@ def create_item():
     # このURLで受け取ったjsonデータをPythonの辞書に変換→それをschema.load()でバリデーション・整形
     validated_data = item_schema.load(request.get_json())
   except ValidationError as err:
-    return jsonify({'message': '入力データが無効です', 'errors': err.messages}), 400
+    return jsonify({'message': '入力データが無効です', 'errors': err.messages}), 422
 
   # 現在ログインしているユーザーのIDを取得
   current_user_id = get_jwt_identity()
@@ -81,7 +81,7 @@ def update_item(item_id): # この引数はURLから取得される
   try:
     validated_data = item_schema.load(request.get_json(), partial=True)
   except ValidationError as err:
-    return jsonify({'message': '入力データが無効です', 'errors': err.messages}), 400
+    return jsonify({'message': '入力データが無効です', 'errors': err.messages}), 422
 
   for key, value in validated_data.items():
     setattr(item, key, value)
@@ -112,11 +112,11 @@ def upload_item_image(item_id): # この引数はURLから取得される
     return jsonify({'message': '権限がありません'}), 403
 
   if 'image' not in request.files:
-    return jsonify({'message': '画像ファイルがありません'}), 400
+    return jsonify({'message': '画像ファイルがありません'}), 422
 
   image = request.files['image']
   if image.filename == '':
-    return jsonify({'message': 'ファイル名がありません'}), 400
+    return jsonify({'message': 'ファイル名がありません'}), 422
 
   # 画像保存処理（例: staticディレクトリに保存）
   import os
