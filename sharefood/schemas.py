@@ -68,7 +68,7 @@ class ItemSchema(Schema):
   description = fields.Str(allow_none=True, validate=validate.Length(max=255, error="説明文は255文字以下で入力してください。"))
   quantity = fields.Int(required=True, validate=validate.Range(min=1, error="数量は1以上で入力してください。"))
   image_path = fields.Str(dump_only=True) # 画像パスは読み取り専用
-  unit = fields.Str(load_default='個', dump_default='個') # 単位
+  unit = fields.Str(required=False, load_default='個', dump_default='個') # 単位
   expiration_date = fields.Date(allow_none=True) # YYYY-MM-DD形式
   location = fields.Str(allow_none=True, validate=validate.Length(max=120, error="場所は120文字以下で入力してください。"))
   is_available = fields.Bool(load_default=True, dump_default=True)

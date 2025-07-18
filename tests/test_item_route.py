@@ -9,7 +9,8 @@ class TestItemRoute:
     payload = {
       "name": "リンゴ",
       "quantity": 10,
-      "description": "新鮮なリンゴです"
+      "description": "新鮮なリンゴです",
+      "unit": "個"
     }
     response = client.post(
       '/api/v1/items/',
@@ -17,6 +18,7 @@ class TestItemRoute:
       headers=auth_header
     )
     data = response.get_json()
+    print("レスポンスJSON:", data)  # ← ここを追加
     assert response.status_code == 201
     assert data['message'] == '食品が正常に出品されました'
     assert data['item']['name'] == "リンゴ"
