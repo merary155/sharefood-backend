@@ -4,7 +4,7 @@ from sharefood.models import User
 from sharefood.config import TestingConfig
 from flask_jwt_extended import create_access_token
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='function')
 def client():
   """テスト用のクライアントとクリーンなDBをセットアップするフィクスチャ"""
   app = create_app(config_class=TestingConfig)
@@ -16,7 +16,7 @@ def client():
       db.session.remove()
       db.drop_all()
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='function')
 def auth_header(client):
   """テスト用のユーザー作成とアクセストークンを発行するフィクスチャ"""
   with client.application.app_context():

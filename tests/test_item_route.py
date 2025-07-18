@@ -75,3 +75,44 @@ class TestItemRoute:
     names = [item['name'] for item in data['items']]
     assert "バナナ" in names
     assert "みかん" in names
+    
+  # quantityが0以下の場合のテスト
+  def test_create_item_invalid_quantity(self, client, auth_header):
+      """quantityが0以下の場合にバリデーションエラーとなること"""
+      payload = {
+        "name": "Zero Quantity Item",
+        "description": "Quantity is zero",
+        "quantity": 0
+      }
+      response = client.post('/api/v1/items/', json=payload, headers=auth_header)
+      data = response.get_json()
+      assert response.status_code == 400
+      assert "quantity" in data["errors"]
+      assert "数量は1以上で入力してください。" in data["errors"]["quantity"]
+
+  # nameが空文字の場合のテスト
+  def test_create_item_empty_name(self, client, auth_header):
+      """nameが空文字の場合にバリデーションエラーとなること"""
+      payload = {
+        "name": "",
+        "description": "No name",
+        "quantity": 5
+      }
+      response = client.post('/api/v1/items/', json=payload, headers=auth_header)
+      data = response.get_json()
+      assert response.status_code == 400
+      assert "name" in data["errors"]
+      assert "食品名は1文字以上50文字以下で入力してください。" in data["errors"]["name"]
+
+  # descriptionが未入力の場合のテスト（任意フィールドなら成功を想定）
+  def test_create_item_without_description(self, client, auth_header):
+      """descriptionが任意項目であり、未入力でも成功すること"""
+      payload = {
+        "name": "No Description",
+        "quantity": 10
+      }
+      response = client.post('/api/v1/items/', json=payload, headers=auth_header)
+      data = response.get_json()
+      assert response.status_code == 201
+      assert "item" in data
+      assert data["item"]["description"] is None
