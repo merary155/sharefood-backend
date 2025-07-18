@@ -28,6 +28,9 @@ class Config:
   
   # JWTのトークン期限設定
   JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=1)
+
+  # JWTの検索場所をヘッダーのみに限定
+  JWT_TOKEN_LOCATION = ['headers']
   
   # その他の共通設定があればここに追加
   # DEBUG = False # デフォルトはFalseにして、開発環境でTrueにするなど
