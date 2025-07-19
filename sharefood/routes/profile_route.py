@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from ..models import User
+from .. import db
 from ..schemas import user_schema
 
 bp = Blueprint('profile_route', __name__, url_prefix='/api/v1')
@@ -9,7 +10,7 @@ bp = Blueprint('profile_route', __name__, url_prefix='/api/v1')
 @jwt_required() # ログインしている（有効なトークンを持っている）ユーザーのみアクセス可能
 def profile():
   current_user_id = int(get_jwt_identity())
-  user = User.query.get_or_404(current_user_id, description='ユーザーが見つかりません')
+  user = db.get_or_404(User, current_user_id, description='ユーザーが見つかりません')
   # ↑このコードは
   # user = User.query.get(current_user_id)
   # if user is None:
