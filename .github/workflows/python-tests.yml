@@ -33,6 +33,6 @@ jobs:
           echo "FLASK_APP=sharefood:create_app" >> $GITHUB_ENV
           echo "FLASK_ENV=testing" >> $GITHUB_ENV
 
-      - name: Run only item route tests
+      - name: Run all tests
         run: |
-          pytest tests/test_item_route.py
+          pytest
