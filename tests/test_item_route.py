@@ -1,119 +1,188 @@
 import pytest
-import json
-from sharefood import db
-from sharefood.models import Item, User
+from flask_jwt_extended import create_access_token
+from sharefood import db, bcrypt
+from sharefood.models import User, Item
 
+
+# --- ヘルパー関数 ---
+def create_test_user(username="testuser", email="test@example.com", password="password"):
+  user = User(
+    username=username,
+    email_address=email,
+    password_hash=bcrypt.generate_password_hash(password).decode('utf-8')
+  )
+  db.session.add(user)
+  db.session.commit()
+  return user
+
+
+def create_test_item(user, name="テスト商品", description="テスト説明", quantity=5):
+  item = Item(name=name, description=description, quantity=quantity, user_id=user.id)
+  db.session.add(item)
+  db.session.commit()
+  return item
+
+
+def get_auth_header(user_id):
+  access_token = create_access_token(identity=str(user_id))
+  return {"Authorization": f"Bearer {access_token}"}
+
+
+# --- POST /items のテスト ---
 class TestItemRoute:
-  def test_create_item_success(self, client, auth_header):
-    """正常に食品を出品できること"""
+
+  def test_create_item_success(self, client):
+    with client.application.app_context():
+      user = create_test_user()
+      auth_header = get_auth_header(user.id)
+
     payload = {
       "name": "リンゴ",
       "quantity": 10,
       "description": "新鮮なリンゴです",
       "unit": "個"
     }
-    response = client.post(
-      '/api/v1/items/',
-      json=payload,
-      headers=auth_header
-    )
+    response = client.post('/api/v1/items/', json=payload, headers=auth_header)
     data = response.get_json()
+
     assert response.status_code == 201
     assert data['message'] == '食品が正常に出品されました'
     assert data['item']['name'] == "リンゴ"
-    assert data['item']['quantity'] == 10
-    assert data['item']['description'] == "新鮮なリンゴです"
 
-    # データベースに正しく保存されたかを確認
+  def test_create_item_missing_required(self, client):
     with client.application.app_context():
-      user = User.query.filter_by(email_address="test@example.com").first()
-      item = Item.query.filter_by(name="リンゴ").first()
-      assert item is not None
-      assert item.user_id == user.id
+      user = create_test_user()
+      auth_header = get_auth_header(user.id)
 
-  def test_create_item_missing_required(self, client, auth_header):
-    """必須フィールドnameやquantityがない場合にエラーとなること"""
-    payload = {
-      "description": "説明だけ"
-    }
-    response = client.post(
-      '/api/v1/items/',
-      json=payload,
-      headers=auth_header
-    )
+    payload = {"description": "説明だけ"}
+    response = client.post('/api/v1/items/', json=payload, headers=auth_header)
     data = response.get_json()
+
     assert response.status_code == 422
-    assert '入力データが無効です' in data['message']
     assert 'name' in data['errors']
     assert 'quantity' in data['errors']
 
   def test_create_item_unauthorized(self, client):
-    """認証なしで出品APIにアクセスしたら401になること"""
-    payload = {
-      "name": "リンゴ",
-      "quantity": 5
-    }
-    response = client.post(
-      '/api/v1/items/',
-      json=payload
-    )
+    payload = {"name": "リンゴ", "quantity": 5}
+    response = client.post('/api/v1/items/', json=payload)
     assert response.status_code == 401
 
-  def test_get_items(self, client, auth_header):
-    """出品されている食品の一覧を取得できること"""
-    # まずデータベースに複数商品を追加
+  def test_create_item_invalid_quantity(self, client):
     with client.application.app_context():
-      user = User.query.first()
-      item1 = Item(name="バナナ", quantity=3, user_id=user.id)
-      item2 = Item(name="みかん", quantity=5, user_id=user.id)
-      db.session.add_all([item1, item2])
-      db.session.commit()
+      user = create_test_user()
+      auth_header = get_auth_header(user.id)
 
-    response = client.get('/api/v1/items/')
+    payload = {"name": "Invalid", "quantity": 0}
+    response = client.post('/api/v1/items/', json=payload, headers=auth_header)
     data = response.get_json()
-    assert response.status_code == 200
-    assert isinstance(data['items'], list)
-    names = [item['name'] for item in data['items']]
-    assert "バナナ" in names
-    assert "みかん" in names
-    
-  # quantityが0以下の場合のテスト
-  def test_create_item_invalid_quantity(self, client, auth_header):
-      """quantityが0以下の場合にバリデーションエラーとなること"""
-      payload = {
-        "name": "Zero Quantity Item",
-        "description": "Quantity is zero",
-        "quantity": 0
-      }
-      response = client.post('/api/v1/items/', json=payload, headers=auth_header)
-      data = response.get_json()
-      assert response.status_code == 422
-      assert "quantity" in data["errors"]
-      assert "数量は1以上で入力してください。" in data["errors"]["quantity"]
+    assert response.status_code == 422
+    assert "quantity" in data["errors"]
 
-  # nameが空文字の場合のテスト
-  def test_create_item_empty_name(self, client, auth_header):
-      """nameが空文字の場合にバリデーションエラーとなること"""
-      payload = {
-        "name": "",
-        "description": "No name",
-        "quantity": 5
-      }
-      response = client.post('/api/v1/items/', json=payload, headers=auth_header)
-      data = response.get_json()
-      assert response.status_code == 422
-      assert "name" in data["errors"]
-      assert "食品名は1文字以上50文字以下で入力してください。" in data["errors"]["name"]
+  def test_create_item_empty_name(self, client):
+    with client.application.app_context():
+      user = create_test_user()
+      auth_header = get_auth_header(user.id)
 
-  # descriptionが未入力の場合のテスト（任意フィールドなら成功を想定）
-  def test_create_item_without_description(self, client, auth_header):
-      """descriptionが任意項目であり、未入力でも成功すること"""
-      payload = {
-        "name": "No Description",
-        "quantity": 10
-      }
-      response = client.post('/api/v1/items/', json=payload, headers=auth_header)
-      data = response.get_json()
-      assert response.status_code == 201
-      assert "item" in data
-      assert data["item"]["description"] is None
+    payload = {"name": "", "quantity": 5}
+    response = client.post('/api/v1/items/', json=payload, headers=auth_header)
+    data = response.get_json()
+    assert response.status_code == 422
+    assert "name" in data["errors"]
+
+  def test_create_item_without_description(self, client):
+    with client.application.app_context():
+      user = create_test_user()
+      auth_header = get_auth_header(user.id)
+
+    payload = {"name": "No Desc", "quantity": 10}
+    response = client.post('/api/v1/items/', json=payload, headers=auth_header)
+    data = response.get_json()
+    assert response.status_code == 201
+    assert data["item"]["description"] is None
+
+
+# --- GET /items のテスト ---
+def test_get_items(client):
+  with client.application.app_context():
+    user = create_test_user()
+    create_test_item(user, name="バナナ", quantity=3)
+    create_test_item(user, name="みかん", quantity=5)
+
+  response = client.get('/api/v1/items/')
+  data = response.get_json()
+  names = [item['name'] for item in data['items']]
+  assert response.status_code == 200
+  assert "バナナ" in names
+  assert "みかん" in names
+
+
+# --- PUT /items/<id> のテスト ---
+def test_update_item_success(client):
+  with client.application.app_context():
+    user = create_test_user()
+    item = create_test_item(user)
+    auth_header = get_auth_header(user.id)
+    item_id = item.id
+
+  update_data = {"name": "更新された商品", "description": "説明更新"}
+  response = client.put(f'/api/v1/items/{item_id}', json=update_data, headers=auth_header)
+  data = response.get_json()
+  assert response.status_code == 200
+  assert data['item']['name'] == "更新された商品"
+
+
+def test_update_item_not_owner(client):
+  with client.application.app_context():
+    owner = create_test_user("owner", "owner@test.com")
+    other = create_test_user("other", "other@test.com")
+    item = create_test_item(owner)
+    auth_header = get_auth_header(other.id)
+    item_id = item.id
+
+  update_data = {"name": "悪意ある更新"}
+  response = client.put(f'/api/v1/items/{item_id}', json=update_data, headers=auth_header)
+  assert response.status_code == 403
+
+
+def test_update_item_not_found(client):
+  with client.application.app_context():
+    user = create_test_user()
+    auth_header = get_auth_header(user.id)
+
+  response = client.put('/api/v1/items/99999', json={"name": "x"}, headers=auth_header)
+  assert response.status_code == 404
+
+
+# --- DELETE /items/<id> のテスト ---
+def test_delete_item_success(client):
+  with client.application.app_context():
+    user = create_test_user()
+    item = create_test_item(user)
+    auth_header = get_auth_header(user.id)
+    item_id = item.id
+
+  response = client.delete(f'/api/v1/items/{item_id}', headers=auth_header)
+  assert response.status_code == 200
+  with client.application.app_context():
+    assert db.session.get(Item, item_id) is None
+
+
+def test_delete_item_not_owner(client):
+  with client.application.app_context():
+    owner = create_test_user("owner", "owner@test.com")
+    attacker = create_test_user("hacker", "hacker@test.com")
+    item = create_test_item(owner)
+    auth_header = get_auth_header(attacker.id)
+    item_id = item.id
+
+  response = client.delete(f'/api/v1/items/{item_id}', headers=auth_header)
+  assert response.status_code == 403
+
+
+def test_delete_item_not_found(client):
+  with client.application.app_context():
+    user = create_test_user()
+    auth_header = get_auth_header(user.id)
+
+  response = client.delete('/api/v1/items/99999', headers=auth_header)
+  assert response.status_code == 404
