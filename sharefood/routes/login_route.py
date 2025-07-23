@@ -26,7 +26,7 @@ def login():
     return jsonify({'message': 'メールアドレスまたはパスワードが正しくありません'}), 401
   
   # emailとPWに問題なければJWTトークン生成
-  access_token = create_access_token(identity=user.id)
+  access_token = create_access_token(identity=str(user.id))
   return jsonify({
     'message': 'ログインに成功しました',
     'access_token': access_token,
