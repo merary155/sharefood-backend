@@ -6,7 +6,7 @@ from ..schemas import user_schema
 
 bp = Blueprint('profile_route', __name__, url_prefix='/api/v1')
 
-@bp.route('/profile', methods=['GET'])
+@bp.route('/me', methods=['GET'])
 @jwt_required() # ログインしている（有効なトークンを持っている）ユーザーのみアクセス可能
 def profile():
   current_user_id = int(get_jwt_identity())
