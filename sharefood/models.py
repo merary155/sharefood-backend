@@ -46,6 +46,9 @@ class Item(db.Model):
   location = db.Column(db.String(120))                               # 受け渡し場所
   created_at = db.Column(db.DateTime, server_default=db.func.now())  # 登録日時
   is_available = db.Column(db.Boolean, default=True)                 # 受け渡し可能かどうか
+  img_url = db.Column(db.String(255))                                # 画像データ
+  latitude = db.Column(db.Float)
+  longitude = db.Column(db.Float)
   # Userとのリレーションを追加
   user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False) 
   user = db.relationship('User', backref=db.backref('items', lazy=True))

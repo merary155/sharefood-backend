@@ -1,34 +1,47 @@
 from flask import Blueprint, jsonify, request
 from marshmallow import ValidationError
 from flask_jwt_extended import jwt_required, get_jwt_identity
-
 from .. import db
 from ..models import Item
 from ..schemas import item_schema, items_schema
 
 bp = Blueprint('item_route', __name__, url_prefix='/api/v1/items')
 
-# --- 食品を出品（登録）API ---
 @bp.route('/', methods=['POST'])
 @jwt_required()
 def create_item():
+  form = request.form
+  # formdataは辞書のように使えるからdictで取り出す
+  data = {
+    'name': form.get('name'),
+    'description': form.get('description'),
+    'quantity': form.get('quantity'),
+    'unit': form.get('unit'),
+    'expiration_date': form.get('expiration_date'),
+    'location': form.get('location'),
+    'latitude': form.get('latitude'),
+    'longitude': form.get('longitude'),
+  }
+  
+  # 必要に応じて空文字をNoneに変換（optional）
+  for k, v in data.items():
+    if v == '':
+      data[k] = None
+
   try:
-    # このURLで受け取ったjsonデータをPythonの辞書に変換→それをschema.load()でバリデーション・整形
-    validated_data = item_schema.load(request.get_json())
+    validated_data = item_schema.load(data)
   except ValidationError as err:
     return jsonify({'message': '入力データが無効です', 'errors': err.messages}), 422
-
-  # 現在ログインしているユーザーのIDを取得
+  
   current_user_id = int(get_jwt_identity())
-
-  # 新しいItemオブジェクトを作成
+  
   new_item = Item(
-    name = validated_data['name'],
-    quantity = validated_data['quantity'],
-    user_id = current_user_id
+    name=validated_data['name'],
+    quantity=validated_data['quantity'],
+    user_id=current_user_id
   )
-
-  # オプショナルなフィールドを一つずつチェックして追加
+  
+  # オプショナルなフィールド設定
   if 'description' in validated_data:
     new_item.description = validated_data['description']
   if 'unit' in validated_data:
@@ -37,12 +50,17 @@ def create_item():
     new_item.expiration_date = validated_data['expiration_date']
   if 'location' in validated_data:
     new_item.location = validated_data['location']
-
+  if 'latitude' in validated_data:
+    new_item.latitude = validated_data['latitude']
+  if 'longitude' in validated_data:
+    new_item.longitude = validated_data['longitude']
+  
   db.session.add(new_item)
   db.session.commit()
-
+  
   return jsonify({'message': '食品が正常に出品されました', 'item': item_schema.dump(new_item)}), 201
-
+  
+  
 # --- アイテムを1件のみ詳細取得 ---
 @bp.route('/<int:item_id>', methods=['GET'])
 def get_item(item_id):
@@ -83,7 +101,6 @@ def update_item(item_id): # この引数はURLから取得される
   try:
     validated_data = item_schema.load(request.get_json(), partial=True)
   except ValidationError as err:
-
     return jsonify({'message': '入力データが無効です', 'errors': err.messages}), 422
 
   for key, value in validated_data.items():
@@ -107,37 +124,3 @@ def delete_item(item_id): # この引数はURLから取得される
   db.session.commit()
   return jsonify({'message': '食品を削除しました'}), 200
 
-# --- アイテム画像アップロード ---
-@bp.route('/<int:item_id>/image', methods=['POST'])
-@jwt_required()
-def upload_item_image(item_id): # この引数はURLから取得される
-  item = Item.query.get_or_404(item_id)
-
-  current_user_id = int(get_jwt_identity())
-
-  if item.user_id != current_user_id:
-    return jsonify({'message': '権限がありません'}), 403
-
-  if 'image' not in request.files:
-
-    return jsonify({'message': '画像ファイルがありません'}), 422
-
-  image = request.files['image']
-  if image.filename == '':
-    return jsonify({'message': 'ファイル名がありません'}), 422
-
-  # 画像保存処理（例: staticディレクトリに保存）
-  import os
-  from werkzeug.utils import secure_filename
-
-  filename = secure_filename(image.filename)
-  save_dir = os.path.join('static', 'item_images')
-  os.makedirs(save_dir, exist_ok=True)
-  save_path = os.path.join(save_dir, filename)
-  image.save(save_path)
-
-  # アイテムに画像パスを保存（models.pyにimage_pathカラムが必要）
-  item.image_path = save_path
-  db.session.commit()
-
-  return jsonify({'message': '画像をアップロードしました', 'image_path': save_path}), 200
