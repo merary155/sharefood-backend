@@ -26,6 +26,10 @@ def create_app(testing=False, config_class=Config):
 
     # --- ここで渡されたconfig_classから設定を読み込む ---
     app.config.from_object(config_class)
+    
+    # 画像保存先設定
+    app.config['UPLOAD_FOLDER'] = os.path.join(project_root, 'uploads')
+    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
     # --- 拡張機能の初期化 ---
     # ここで拡張機能をFlaskアプリに結びつける
@@ -41,7 +45,7 @@ def create_app(testing=False, config_class=Config):
         # ファクトリ内でインポートすることで循環参照を避けます。
         from .routes import (
             register_route, login_route, profile_route, 
-            logout_route, item_route, view_route
+            logout_route, item_route, view_route,upload_route
         )
         from . import models
 
@@ -52,6 +56,7 @@ def create_app(testing=False, config_class=Config):
         app.register_blueprint(logout_route.bp)
         app.register_blueprint(item_route.bp)
         app.register_blueprint(view_route.bp)
+        app.register_blueprint(upload_route.bp)
     
         # JWTのエラーハンドリングを追加すると、より親切なエラーメッセージを返せます
         @jwt.unauthorized_loader

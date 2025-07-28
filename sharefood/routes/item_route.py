@@ -19,8 +19,6 @@ def create_item():
     'unit': form.get('unit'),
     'expiration_date': form.get('expiration_date'),
     'location': form.get('location'),
-    'latitude': form.get('latitude'),
-    'longitude': form.get('longitude'),
   }
   
   # 必要に応じて空文字をNoneに変換（optional）
