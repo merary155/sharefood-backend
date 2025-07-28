@@ -28,6 +28,7 @@ class Config:
   
   # JWTのトークン期限設定
   JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=1)
+  JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=7) # リフレッシュトークンの有効期限を7日に設定
 
   # JWTの検索場所をヘッダーのみに限定
   JWT_TOKEN_LOCATION = ['headers']

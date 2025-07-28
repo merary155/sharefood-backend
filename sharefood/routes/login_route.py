@@ -3,7 +3,7 @@ from ..schemas import LoginSchema, user_schema
 from ..models import User
 from .. import bcrypt
 from marshmallow import ValidationError
-from flask_jwt_extended import create_access_token
+from flask_jwt_extended import create_access_token, create_refresh_token
 
 bp = Blueprint('login_route', __name__, url_prefix='/api/v1')
 
@@ -26,9 +26,11 @@ def login():
     return jsonify({'message': 'メールアドレスまたはパスワードが正しくありません'}), 401
   
   # emailとPWに問題なければJWTトークン生成
-  access_token = create_access_token(identity=user.id)
+  access_token = create_access_token(identity=str(user.id))
+  refresh_token = create_refresh_token(identity=str(user.id))
   return jsonify({
     'message': 'ログインに成功しました',
     'access_token': access_token,
+    'refresh_token': refresh_token,
     'user': user_schema.dump(user)
   }), 200
