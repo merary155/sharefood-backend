@@ -45,7 +45,7 @@ def create_app(testing=False, config_class=Config):
         # ファクトリ内でインポートすることで循環参照を避けます。
         from .routes import (
             register_route, login_route, profile_route, 
-            logout_route, item_route, view_route,upload_route
+            logout_route, item_route, view_route,upload_route,refresh_route
         )
         from . import models
 
@@ -57,6 +57,7 @@ def create_app(testing=False, config_class=Config):
         app.register_blueprint(item_route.bp)
         app.register_blueprint(view_route.bp)
         app.register_blueprint(upload_route.bp)
+        app.register_blueprint(refresh_route.bp)
     
         # JWTのエラーハンドリングを追加すると、より親切なエラーメッセージを返せます
         @jwt.unauthorized_loader
