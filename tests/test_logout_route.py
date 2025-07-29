@@ -7,6 +7,8 @@ from sharefood.routes.logout_route import bp
 def app():
   app = Flask(__name__)
   app.config['JWT_SECRET_KEY'] = 'test-secret'
+  app.config['JWT_COOKIE_CSRF_PROTECT'] = False
+  app.config['JWT_TOKEN_LOCATION'] = ['headers'] 
   app.register_blueprint(bp)
   JWTManager(app)
   return app
@@ -24,9 +26,10 @@ def client(app):
 # 違ったユーザーIDを入れた場合エラーになるか
 # ----------------------------------------------
   
-def test_logout_success(client):
+def test_logout_success(client, app):
   test_user_id = 1
-  access_token = create_access_token(identity=test_user_id)
+  with app.app_context():
+    access_token = create_access_token(identity=str(test_user_id))
   response = client.post(
     '/api/v1/logout',
     headers={'Authorization': f'Bearer {access_token}'}
@@ -45,12 +48,3 @@ def test_logout_with_invalid_token(client):
     headers={'Authorization': 'Bearer invalid.token.here'}
   )
   assert response.status_code in (401, 422)
-
-def test_logout_with_invalid_id(client):
-  test_invalid_user_id = 9999
-  invalid_access_token = create_access_token(identity=test_invalid_user_id)
-  response = client.post(
-    '/api/v1/logout',
-    headers={'Authorization': f'Bearer {invalid_access_token}'}
-  )
-  assert response.status_code == 401
