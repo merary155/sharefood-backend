@@ -1,6 +1,16 @@
 from flask_jwt_extended import create_access_token
 from sharefood.models import User
 from sharefood import db
+import pytest
+from flask import Flask
+
+@pytest.fixture
+def app():
+  app = Flask(__name__)
+
+@pytest.fixture
+
+  
 
 def create_test_user(username="testuser", email="test@example.com", password="password"):
   """テスト用のユーザーをDBに作成するヘルパー関数"""
