@@ -1,19 +1,6 @@
-import pytest
-from flask import Flask
-from flask_jwt_extended import JWTManager, create_access_token
-from sharefood.routes.logout_route import bp
-
-@pytest.fixture
-def app():
-  app = Flask(__name__)
-  app.config['JWT_SECRET_KEY'] = 'test-secret'
-  app.register_blueprint(bp)
-  JWTManager(app)
-  return app
-
-@pytest.fixture
-def client(app):
-  return app.test_client()
+from flask_jwt_extended import create_access_token
+from sharefood import db
+from sharefood.models import User
 
 # ----------------------------------------------
 #      <<-- テストの要件 -->>
@@ -23,9 +10,13 @@ def client(app):
 # 無効なトークンだと拒否されるか
 # ----------------------------------------------
   
-def test_logout_success(client, app):
+def test_logout_success(client):
+  """正常系: 有効なトークンでログアウトが成功することをテスト"""
   test_user_id = 1
-  with app.app_context():
+  # client.application で conftest の app インスタンスにアクセスできる
+  with client.application.app_context():
+    # このテストではDBのユーザーは不要だが、トークン生成のために便宜上IDを使う
+    # 実際のログアウトAPIはDBを見ないので、ユーザーが存在しなくても動作する
     access_token = create_access_token(identity=str(test_user_id))
   response = client.post(
     '/api/v1/logout',
@@ -36,12 +27,19 @@ def test_logout_success(client, app):
   assert data['message'] == 'ログアウトに成功しました'
 
 def test_logout_without_token(client):
+  """異常系: トークンなしでアクセスした場合に401エラーが返ることをテスト"""
   response = client.post('/api/v1/logout')
+  data = response.get_json()
   assert response.status_code == 401
+  # __init__.py で設定したカスタムエラーメッセージを検証
+  assert data['message'] == 'リクエストには認証トークンが必要です'
 
 def test_logout_with_invalid_token(client):
+  """異常系: 無効なトークンでアクセスした場合に422エラーが返ることをテスト"""
   response = client.post(
     '/api/v1/logout',
     headers={'Authorization': 'Bearer invalid.token.here'}
   )
-  assert response.status_code in (401, 422)
+  data = response.get_json()
+  assert response.status_code == 422
+  assert data['message'] == '無効な認証トークンです'

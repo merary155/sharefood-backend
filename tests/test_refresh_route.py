@@ -1,20 +1,4 @@
-import pytest
-from flask import Flask
 from flask_jwt_extended import JWTManager, create_refresh_token
-from sharefood.routes.refresh_route import bp
-
-@pytest.fixture
-def app():
-  app = Flask(__name__)
-  app.config['JWT_SECRET_KEY'] = 'test-secret'
-  app.register_blueprint(bp)
-  JWTManager(app)
-  return app
-
-# テスト用の仮想ユーザー情報を生成
-@pytest.fixture
-def client(app):
-  return app.test_client()
 
 # ----------------------------------------------
 #      <<-- テストの要件 -->>
@@ -24,11 +8,12 @@ def client(app):
 # 無効なトークンだと拒否されるか
 # ----------------------------------------------
 
-def test_refresh_success(client, app):
+def test_refresh_success(client):
+  """正常系: 有効なリフレッシュトークンで新しいアクセストークンが取得できることをテスト"""
   # テスト用のユーザーID
   test_user_id = 1
   # リフレッシュトークン発行
-  with app.app_context():
+  with client.application.app_context():
     refresh_token = create_refresh_token(identity=str(test_user_id))
   response = client.post(
     '/api/v1/refresh',
@@ -43,12 +28,19 @@ def test_refresh_success(client, app):
   assert 'access_token' in json_data  
 
 def test_refresh_without_token(client):
+  """異常系: トークンなしでアクセスした場合に401エラーが返ることをテスト"""
   response = client.post('/api/v1/refresh')
+  data = response.get_json()
   assert response.status_code == 401
+  # __init__.py で設定したカスタムエラーメッセージを検証
+  assert data['message'] == 'リクエストには認証トークンが必要です'
 
 def test_refresh_with_invalid_token(client):
+  """異常系: 無効なトークンでアクセスした場合に422エラーが返ることをテスト"""
   response = client.post(
     '/api/v1/refresh',
     headers={'Authorization': 'Bearer invalid.token.here'}
   )
-  assert response.status_code in (401, 422)
+  data = response.get_json()
+  assert response.status_code == 422
+  assert data['message'] == '無効な認証トークンです'
