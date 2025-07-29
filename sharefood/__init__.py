@@ -40,6 +40,17 @@ def create_app(testing=False, config_class=Config):
     jwt.init_app(app)
     bcrypt.init_app(app)
 
+    # --- 共通エラーハンドラの登録 ---
+    @app.errorhandler(404)
+    def not_found_error(error):
+        """404 Not FoundエラーをJSONで返す"""
+        return jsonify({"message": error.description or "リソースが見つかりません"}), 404
+
+    @app.errorhandler(500)
+    def internal_error(error):
+        """500 Internal Server ErrorをJSONで返す"""
+        return jsonify({"message": "サーバー内部でエラーが発生しました"}), 500
+
     with app.app_context():
         # --- ルーティングとモデルのインポート ---
         # ファクトリ内でインポートすることで循環参照を避けます。
