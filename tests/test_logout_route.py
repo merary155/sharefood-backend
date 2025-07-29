@@ -7,8 +7,6 @@ from sharefood.routes.logout_route import bp
 def app():
   app = Flask(__name__)
   app.config['JWT_SECRET_KEY'] = 'test-secret'
-  app.config['JWT_COOKIE_CSRF_PROTECT'] = False
-  app.config['JWT_TOKEN_LOCATION'] = ['headers'] 
   app.register_blueprint(bp)
   JWTManager(app)
   return app
@@ -23,7 +21,6 @@ def client(app):
 # 正常にログアウト出来たら200が返ってくるか
 # トークン無しだと拒否されるか
 # 無効なトークンだと拒否されるか
-# 違ったユーザーIDを入れた場合エラーになるか
 # ----------------------------------------------
   
 def test_logout_success(client, app):

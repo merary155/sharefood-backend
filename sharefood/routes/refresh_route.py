@@ -10,6 +10,6 @@ def refresh():
   リフレッシュトークンを使って新しいアクセストークンを生成するエンドポイント
   """
   current_user_id = get_jwt_identity()
-  new_access_token = create_access_token()
+  new_access_token = create_access_token(identity=str(current_user_id))
   return jsonify({'access_token': new_access_token}), 200
 

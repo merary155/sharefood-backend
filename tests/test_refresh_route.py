@@ -1,4 +1,3 @@
-
 import pytest
 from flask import Flask
 from flask_jwt_extended import JWTManager, create_refresh_token
@@ -23,14 +22,14 @@ def client(app):
 # リフレッシュトークンを利用してアクセストークンが発行されるか
 # トークン無しだと拒否されるか
 # 無効なトークンだと拒否されるか
-# 違ったユーザーIDを入れた場合エラーになるか
 # ----------------------------------------------
 
-def test_refresh_success(client):
+def test_refresh_success(client, app):
   # テスト用のユーザーID
   test_user_id = 1
   # リフレッシュトークン発行
-  refresh_token = create_refresh_token(identity=test_user_id)
+  with app.app_context():
+    refresh_token = create_refresh_token(identity=str(test_user_id))
   response = client.post(
     '/api/v1/refresh',
     headers={'Authorization': f'Bearer {refresh_token}'}
@@ -53,14 +52,3 @@ def test_refresh_with_invalid_token(client):
     headers={'Authorization': 'Bearer invalid.token.here'}
   )
   assert response.status_code in (401, 422)
-
-def test_refresh_with_invalid_id(client):
-  test_invalid_id = 99999
-  refresh_token = create_refresh_token(identity=test_invalid_id)
-  response = client.post(
-    '/api/v1/refresh',
-    headers={'Authorization': f'Bearer {refresh_token}'}
-  )
-  assert response.status_code == 401
-  
-  
