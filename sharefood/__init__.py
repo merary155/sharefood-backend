@@ -5,6 +5,7 @@ from flask_migrate import Migrate
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from flask_bcrypt import Bcrypt
+from sharefood.routes import uploads_route
 from .config import Config
 
 # --- 拡張機能のインスタンスを作成 ---
@@ -28,7 +29,6 @@ def create_app(testing=False, config_class=Config):
     app.config.from_object(config_class)
     
     # 画像保存先設定
-    app.config['UPLOAD_FOLDER'] = os.path.join(project_root, 'uploads')
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
     # --- 拡張機能の初期化 ---
@@ -56,7 +56,8 @@ def create_app(testing=False, config_class=Config):
         # ファクトリ内でインポートすることで循環参照を避けます。
         from .routes import (
             register_route, login_route, profile_route, 
-            logout_route, item_route, view_route,upload_route,refresh_route
+            logout_route, item_route, view_route,upload_route,
+            refresh_route, upload_route
         )
         from . import models
 
@@ -69,6 +70,7 @@ def create_app(testing=False, config_class=Config):
         app.register_blueprint(view_route.bp)
         app.register_blueprint(upload_route.bp)
         app.register_blueprint(refresh_route.bp)
+        app.register_blueprint(upload_route.bp)
     
         # JWTのエラーハンドリングを追加すると、より親切なエラーメッセージを返せます
         @jwt.unauthorized_loader
