@@ -8,6 +8,8 @@ import sharefood
 # ここでは"C:/.../sharefood-backend"をproject_rootに代入
 project_root = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 
+UPLOAD_FOLDER = os.path.join(project_root, 'sharefood', 'static', 'uploads')
+
 class Config:
   # --- データベースファイルのパスを設定 ---
   # 環境変数 DATABASE_URL があればそれを使用、なければ 'sqlite:///app.db' を使用
@@ -32,9 +34,10 @@ class Config:
 
   # JWTの検索場所をヘッダーのみに限定
   JWT_TOKEN_LOCATION = ['headers']
-  
-  # その他の共通設定があればここに追加
-  # DEBUG = False # デフォルトはFalseにして、開発環境でTrueにするなど
+
+  # 画像アップロードの保存先
+  UPLOAD_FOLDER = UPLOAD_FOLDER
+  ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
 class DevelopmentConfig(Config):
   # 開発環境用の設定

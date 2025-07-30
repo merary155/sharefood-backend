@@ -2,9 +2,9 @@ import os
 from flask import Blueprint, request, current_app, jsonify
 from werkzeug.utils import secure_filename
 
-bp = Blueprint('upload_route', __name__, url_prefix='/api/v1/upload')
+bp = Blueprint('upload_route', __name__, url_prefix='/api/v1')
 
-@bp.route('/', methods=['POST'])
+@bp.route('/upload', methods=['POST'])
 def upload_file():
   if 'images' not in request.files:
     return jsonify({'message': '画像ファイルがありません'}),400
