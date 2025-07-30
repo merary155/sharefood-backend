@@ -1,20 +1,7 @@
 import pytest
 import json
-from sharefood import create_app, db
+from sharefood import db
 from sharefood.models import User
-from sharefood.config import TestingConfig
-
-@pytest.fixture
-def client():
-    """各テスト用にクリーンなアプリケーションとデータベースをセットアップするフィクスチャ"""
-    app = create_app(config_class=TestingConfig)
-    with app.test_client() as client:
-        with app.app_context():
-            db.create_all()
-        yield client
-        with app.app_context():
-            db.session.remove()
-            db.drop_all()
 
 class TestRegisterRoute:
     """/api/v1/register エンドポイントのテストスイート"""

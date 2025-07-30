@@ -10,7 +10,7 @@ def client():
   """テスト用のクライアントとクリーンなDBをセットアップするフィクスチャ"""
   app = create_app(config_class=TestingConfig)
 
-  # 404エラーがJSONで返るようにハンドラを設定
+  # 404エラーでHTMLが返ってきてたのでJSONで返るようにハンドラを設定
   @app.errorhandler(404)
   def not_found_error(error):
       return jsonify({"message": error.description or "Not Found"}), 404
