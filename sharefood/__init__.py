@@ -5,7 +5,6 @@ from flask_migrate import Migrate
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from flask_bcrypt import Bcrypt
-from sharefood.routes import uploads_route
 from .config import Config
 
 # --- 拡張機能のインスタンスを作成 ---
