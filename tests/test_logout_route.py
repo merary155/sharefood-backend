@@ -1,6 +1,4 @@
-from flask_jwt_extended import create_access_token
-from sharefood import db
-from sharefood.models import User
+from .helpers import create_test_user, get_auth_header
 
 # ----------------------------------------------
 #      <<-- テストの要件 -->>
@@ -12,16 +10,12 @@ from sharefood.models import User
   
 def test_logout_success(client):
   """正常系: 有効なトークンでログアウトが成功することをテスト"""
-  test_user_id = 1
-  # client.application で conftest の app インスタンスにアクセスできる
   with client.application.app_context():
-    # このテストではDBのユーザーは不要だが、トークン生成のために便宜上IDを使う
-    # 実際のログアウトAPIはDBを見ないので、ユーザーが存在しなくても動作する
-    access_token = create_access_token(identity=str(test_user_id))
-  response = client.post(
-    '/api/v1/logout',
-    headers={'Authorization': f'Bearer {access_token}'}
-  )
+    # テスト用のユーザーを作成し、そのユーザーの認証ヘッダーを取得
+    user = create_test_user()
+    auth_header = get_auth_header(user.id)
+
+  response = client.post('/api/v1/logout', headers=auth_header)
   assert response.status_code == 200
   data = response.get_json()
   assert data['message'] == 'ログアウトに成功しました'

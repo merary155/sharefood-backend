@@ -1,6 +1,5 @@
-from flask_jwt_extended import create_access_token
-from sharefood.models import User
 from sharefood import db
+from .helpers import create_test_user, get_auth_header
 
 # ----------------------------------------------
 #      <<-- テストの要件 -->>
@@ -11,27 +10,16 @@ from sharefood import db
 # 存在しないユーザーでアクセスしたら拒否されるか
 # ----------------------------------------------
 
-def create_test_user(username="testuser", email="test@example.com", password="password"):
-  """テスト用のユーザーをDBに作成するヘルパー関数"""
-  user = User(username=username, email_address=email)
-  user.password = password
-  db.session.add(user)
-  db.session.commit()
-  return user
-
 def test_get_profile_success(client):
   """
   正常系: 認証済みユーザーがプロフィールを正常に取得できることをテスト
   """
   with client.application.app_context():
     # DB操作はアプリケーションコンテキスト内で行う
-    test_user = create_test_user()
-    access_token = create_access_token(identity=str(test_user.id))
-    
-  response = client.get(
-    '/api/v1/me', 
-    headers={'Authorization': f'Bearer {access_token}'}
-    )
+    test_user = create_test_user() # conftestからヘルパー関数を呼び出し
+    auth_header = get_auth_header(test_user.id) # conftestからヘルパー関数を呼び出し
+
+  response = client.get('/api/v1/me', headers=auth_header)
   data = response.get_json()
 
   assert response.status_code == 200
@@ -72,15 +60,14 @@ def test_get_profile_user_not_found(client):
   """
   with client.application.app_context():
     # テスト用のユーザーを作成し、IDを控える
-    user = create_test_user(username="tempuser", email="temp@example.com")
+    user = create_test_user(username="tempuser", email="temp@example.com") # conftestからヘルパー関数を呼び出し
     user_id = user.id
-    access_token = create_access_token(identity=str(user_id))
+    auth_header = get_auth_header(user_id) # conftestからヘルパー関数を呼び出し
     # ユーザーをDBから削除
     db.session.delete(user)
     db.session.commit()
 
-  headers = {'Authorization': f'Bearer {access_token}'}
-  response = client.get('/api/v1/me', headers=headers)
+  response = client.get('/api/v1/me', headers=auth_header)
   data = response.get_json()
   
   assert response.status_code == 404

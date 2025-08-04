@@ -1,5 +1,4 @@
 from . import db, bcrypt # __init__.pyで定義したインスタンスをインポート
-from marshmallow import Schema, fields
 from datetime import datetime, timedelta, timezone
 import secrets
 import hashlib
