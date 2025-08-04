@@ -6,6 +6,7 @@ from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from flask_bcrypt import Bcrypt
 from .config import Config
+from flask_mail import Mail
 
 # --- 拡張機能のインスタンスを作成 ---
 db = SQLAlchemy()    # SQLAlchemyを利用するためのオブジェクト
@@ -13,6 +14,7 @@ migrate = Migrate()  # マイグレーションを管理するオブジェクト
 cors = CORS()        # frontendとbackendを繋げるためのCORS設定用オブジェクト
 jwt = JWTManager()   # JWT（JSON Web Token）を扱うオブジェクト
 bcrypt = Bcrypt()    # パスワードをハッシュ化するオブジェクト
+mail = Mail()        # メアド認証機能
 
 # プロジェクトのルートディレクトリ (ShareFood-backend) を取得
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
@@ -20,7 +22,7 @@ project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 def create_app(testing=False, config_class=Config):
     """アプリケーションファクトリ関数"""
     # フロントエンドのビルドファイルが格納されている静的フォルダを明示的に指定
-    # これでFlaskはどこにあるindex.htmlを返せばいいか分かるようになります
+    # これでFlaskはどこにあるindex.htmlを返せばいいか分かるようになる
     static_folder_path = os.path.join(project_root, 'static')
     app = Flask(__name__, static_folder=static_folder_path, static_url_path='')
 
@@ -55,8 +57,8 @@ def create_app(testing=False, config_class=Config):
         # ファクトリ内でインポートすることで循環参照を避けます。
         from .routes import (
             register_route, login_route, profile_route, 
-            logout_route, item_route, view_route,upload_route,
-            refresh_route, upload_route
+            logout_route, item_route, view_route,
+            refresh_route, upload_route, verify_email_route
         )
         from . import models
 
@@ -67,9 +69,9 @@ def create_app(testing=False, config_class=Config):
         app.register_blueprint(logout_route.bp)
         app.register_blueprint(item_route.bp)
         app.register_blueprint(view_route.bp)
-        app.register_blueprint(upload_route.bp)
         app.register_blueprint(refresh_route.bp)
         app.register_blueprint(upload_route.bp)
+        app.register_blueprint(verify_email_route.bp)
     
         # JWTのエラーハンドリングを追加すると、より親切なエラーメッセージを返せます
         @jwt.unauthorized_loader

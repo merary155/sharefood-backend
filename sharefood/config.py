@@ -1,6 +1,7 @@
 import os
 from datetime import timedelta
 import sharefood
+from dotenv import load_dotenv
 
 # __file__は今いるファイル
 # os.path.dirname() を1回使う → 1階層上のディレクトリ
@@ -9,6 +10,9 @@ import sharefood
 project_root = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 
 UPLOAD_FOLDER = os.path.join(project_root, 'sharefood', 'static', 'uploads')
+
+# .env ファイルをロード
+load_dotenv()
 
 class Config:
   # --- データベースファイルのパスを設定 ---
@@ -30,7 +34,18 @@ class Config:
   
   # JWTのトークン期限設定
   JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=1)
-  JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=7) # リフレッシュトークンの有効期限を7日に設定
+  JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=30) # リフレッシュトークンの有効期限を30日に設定
+
+  # メール設定 (Flask-Mail)
+  MAIL_SERVER = os.getenv('MAIL_SERVER', 'smtp.example.com') # 例: smtp.gmail.com
+  MAIL_PORT = int(os.getenv('MAIL_PORT', 587))
+  MAIL_USE_TLS = os.getenv('MAIL_USE_TLS', 'True').lower() in ('true', '1', 't')
+  MAIL_USERNAME = os.getenv('MAIL_USERNAME')
+  MAIL_PASSWORD = os.getenv('MAIL_PASSWORD') # アプリケーションパスワード推奨
+  MAIL_DEFAULT_SENDER = os.getenv('MAIL_DEFAULT_SENDER', 'no-reply@example.com')
+
+  # フロントエンドのベースURL (メール認証リンク生成用)
+  FRONTEND_BASE_URL = os.getenv('FRONTEND_BASE_URL', 'http://localhost:3000')
 
   # JWTの検索場所をヘッダーのみに限定
   JWT_TOKEN_LOCATION = ['headers']
@@ -53,7 +68,7 @@ class TestingConfig(Config):
   JWT_ACCESS_TOKEN_EXPIRES = timedelta(minutes=5) # テスト中はJWTの有効期限を短くする
   SECRET_KEY = 'test-secret-key-for-testing' # テスト用の秘密鍵
   JWT_SECRET_KEY = 'test-jwt-secret-key-for-testing' # テスト用のJWT秘密鍵
-
+  MAIL_SUPPRESS_SEND = True # テスト時にメール送信を抑制
 
 class ProductionConfig(Config):
   # 本番環境用の設定
