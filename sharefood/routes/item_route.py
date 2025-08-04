@@ -33,25 +33,9 @@ def create_item():
   
   current_user_id = int(get_jwt_identity())
   
-  new_item = Item(
-    name=validated_data['name'],
-    quantity=validated_data['quantity'],
-    user_id=current_user_id
-  )
-  
-  # オプショナルなフィールド設定
-  if 'description' in validated_data:
-    new_item.description = validated_data['description']
-  if 'unit' in validated_data:
-    new_item.unit = validated_data['unit']
-  if 'expiration_date' in validated_data:
-    new_item.expiration_date = validated_data['expiration_date']
-  if 'location' in validated_data:
-    new_item.location = validated_data['location']
-  if 'latitude' in validated_data:
-    new_item.latitude = validated_data['latitude']
-  if 'longitude' in validated_data:
-    new_item.longitude = validated_data['longitude']
+  # validated_dataにuser_idを追加し、**kwargsとしてItemモデルに渡す
+  validated_data['user_id'] = current_user_id
+  new_item = Item(**validated_data)
   
   db.session.add(new_item)
   db.session.commit()
@@ -121,4 +105,3 @@ def delete_item(item_id): # この引数はURLから取得される
   db.session.delete(item)
   db.session.commit()
   return jsonify({'message': '食品を削除しました'}), 200
-
