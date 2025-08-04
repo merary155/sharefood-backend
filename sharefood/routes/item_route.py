@@ -1,4 +1,6 @@
-from flask import Blueprint, jsonify, request
+import os
+from flask import Blueprint, jsonify, request, current_app
+from werkzeug.utils import secure_filename
 from marshmallow import ValidationError
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from .. import db
@@ -10,38 +12,33 @@ bp = Blueprint('item_route', __name__, url_prefix='/api/v1/items')
 @bp.route('/', methods=['POST'])
 @jwt_required()
 def create_item():
-  form = request.form
-  # formdataは辞書のように使えるからdictで取り出す
-  data = {
-    'name': form.get('name'),
-    'description': form.get('description'),
-    'quantity': form.get('quantity'),
-    'unit': form.get('unit'),
-    'expiration_date': form.get('expiration_date'),
-    'location': form.get('location'),
-  }
-  
-  # 必要に応じて空文字をNoneに変換（optional）
-  for k, v in data.items():
-    if v == '':
-      data[k] = None
-
+  # multipart/form-data からテキストデータを取得
+  data = request.form.to_dict()
+ 
   try:
     validated_data = item_schema.load(data)
   except ValidationError as err:
     return jsonify({'message': '入力データが無効です', 'errors': err.messages}), 422
   
   current_user_id = int(get_jwt_identity())
-  
-  # validated_dataにuser_idを追加し、**kwargsとしてItemモデルに渡す
   validated_data['user_id'] = current_user_id
   new_item = Item(**validated_data)
   
+  # 画像ファイルの処理
+  # フロントエンドからは 'image' というキーでファイルを送信することを想定
+  if 'image' in request.files:
+    file = request.files['image']
+    # ファイルが存在し、ファイル名が空でないことを確認
+    if file and file.filename != '':
+      filename = secure_filename(file.filename)
+      save_path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+      file.save(save_path)
+      new_item.img_url = filename # ファイル名をDBに保存
+
   db.session.add(new_item)
   db.session.commit()
   
   return jsonify({'message': '食品が正常に出品されました', 'item': item_schema.dump(new_item)}), 201
-  
   
 # --- アイテムを1件のみ詳細取得 ---
 @bp.route('/<int:item_id>', methods=['GET'])

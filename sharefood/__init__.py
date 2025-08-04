@@ -40,6 +40,7 @@ def create_app(testing=False, config_class=Config):
     cors.init_app(app, resources={r"/api/*": {"origins": "*"}})
     jwt.init_app(app)
     bcrypt.init_app(app)
+    mail.init_app(app)
 
     # --- 共通エラーハンドラの登録 ---
     @app.errorhandler(404)
