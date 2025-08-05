@@ -60,9 +60,9 @@ def test_get_profile_user_not_found(client):
   """
   with client.application.app_context():
     # テスト用のユーザーを作成し、IDを控える
-    user = create_test_user(username="tempuser", email="temp@example.com") # conftestからヘルパー関数を呼び出し
+    user = create_test_user(username="tempuser", email="temp@example.com") 
     user_id = user.id
-    auth_header = get_auth_header(user_id) # conftestからヘルパー関数を呼び出し
+    auth_header = get_auth_header(user_id) 
     # ユーザーをDBから削除
     db.session.delete(user)
     db.session.commit()
