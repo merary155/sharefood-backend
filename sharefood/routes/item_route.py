@@ -102,3 +102,19 @@ def delete_item(item_id): # この引数はURLから取得される
   db.session.delete(item)
   db.session.commit()
   return jsonify({'message': '食品を削除しました'}), 200
+
+# --- 一時出品停止・出品再開 ---
+@bp.route('/<int:item_id>/toggle-availability', methods=['POST'])
+@jwt_required()
+def toggle_availability(item_id):
+  current_user_id = int(get_jwt_identity())
+  item = Item.query.filter_by(id = item_id, user_id = current_user_id).first()
+
+  if not item:
+    return jsonify({'success': False, 'message': '商品が見つかりません'}), 404
+
+  item.is_available = not item.is_available # ここでitemの'True|False'を切り替えて代入　※'is_available'が'boolean'
+  db.session.commit()
+
+  return jsonify({'success': True, 'is_available': item.is_available}), 200
+
