@@ -2,6 +2,7 @@ from . import db, bcrypt # __init__.pyで定義したインスタンスをイン
 from datetime import datetime, timedelta, timezone
 import secrets
 import hashlib
+from sqlalchemy import DateTime
 
 # nullable そのcolumnに(null)を許すかどうか(許す→True)
 # unique そのcolumnが他の行との重複を禁止にするかどうか→重複禁止(True)
@@ -18,7 +19,7 @@ class User(db.Model):
   password_hash = db.Column(db.String(60), nullable=False)                    # bcryptによってハッシュ化されたパスワードは60文字
   is_verified = db.Column(db.Boolean, default=False, nullable=False)          # メール認証済みかどうかのフラグ
   verification_token = db.Column(db.String(64), unique=True, nullable=True)   # 認証トークン
-  token_expires_at = db.Column(db.DateTime, nullable=True)                    # トークンの有効期限
+  token_expires_at = db.Column(DateTime(timezone=True), nullable=True)             # トークンの有効期限
 
   # ()が不要になり、関数を変数のように読み取れる
   # ただしここでは読み取りは禁止し、アクセスすると例外を出す

@@ -1,6 +1,5 @@
 import pytest
 import json
-from sharefood import db
 from .helpers import create_test_user
 from sharefood.models import User
 
