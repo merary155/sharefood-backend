@@ -19,7 +19,7 @@ class User(db.Model):
   password_hash = db.Column(db.String(60), nullable=False)                    # bcryptによってハッシュ化されたパスワードは60文字
   is_verified = db.Column(db.Boolean, default=False, nullable=False)          # メール認証済みかどうかのフラグ
   verification_token = db.Column(db.String(64), unique=True, nullable=True)   # 認証トークン
-  token_expires_at = db.Column(DateTime(timezone=True), nullable=True)             # トークンの有効期限
+  token_expires_at = db.Column(DateTime(timezone=True), nullable=True)        # トークンの有効期限
 
   # ()が不要になり、関数を変数のように読み取れる
   # ただしここでは読み取りは禁止し、アクセスすると例外を出す

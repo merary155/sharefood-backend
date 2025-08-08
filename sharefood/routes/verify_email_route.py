@@ -20,7 +20,13 @@ def verify_email():
     return jsonify({'message': '無効な認証トークンです。'}), 404
 
   # トークンの有効期限チェック
-  if not user.token_expires_at or user.token_expires_at < datetime.now(timezone.utc):
+  # SQLiteはタイムゾーンをネイティブにサポートしないため、テスト実行時にDBから取得した
+  # 日時がnaive(タイムゾーン情報なし)になる。これをaware(情報あり)に変換してから比較する。
+  expires_at = user.token_expires_at
+  if expires_at and expires_at.tzinfo is None:
+    expires_at = expires_at.replace(tzinfo=timezone.utc)
+
+  if not expires_at or expires_at < datetime.now(timezone.utc):
     current_app.logger.info(f"期限切れトークン使用: {token}") # ログチェック用
     return jsonify({'message': '認証トークンの有効期限が切れています。'}), 400
 
