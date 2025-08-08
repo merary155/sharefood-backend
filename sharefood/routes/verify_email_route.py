@@ -19,6 +19,10 @@ def verify_email():
     current_app.logger.warning(f"無効な認証トークンが使用されました: {token}") # ログチェック用
     return jsonify({'message': '無効な認証トークンです。'}), 404
 
+  # ユーザーが既に認証済みかチェック
+  if user.is_verified:
+    return jsonify({'message': 'すでに認証済みのユーザーです。'}), 400
+
   # トークンの有効期限チェック
   # SQLiteはタイムゾーンをネイティブにサポートしないため、テスト実行時にDBから取得した
   # 日時がnaive(タイムゾーン情報なし)になる。これをaware(情報あり)に変換してから比較する。
