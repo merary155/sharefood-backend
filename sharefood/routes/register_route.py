@@ -75,7 +75,7 @@ def send_verification_email(email, token):
     # config.pyで設定したFRONTEND_BASE_URLを使用
     verification_link = f"{current_app.config.get('FRONTEND_BASE_URL')}/verify-email?token={token}"
 
-    msg = Message('アカウント認証のお願い', recipients=[email])
+    msg = Message('【ShareFood】アカウント認証のお願い', recipients=[email])
     msg.body = textwrap.dedent(f"""\
     この度はご登録いただきありがとうございます。
     アカウントを認証するには、以下のリンクをクリックしてください:
