@@ -45,7 +45,7 @@ class Config:
   MAIL_DEFAULT_SENDER = os.getenv('MAIL_DEFAULT_SENDER', 'no-reply@example.com')
 
   # フロントエンドのベースURL (メール認証リンク生成用)
-  FRONTEND_BASE_URL = os.getenv('FRONTEND_BASE_URL', 'http://localhost:3000')
+  FRONTEND_BASE_URL = os.getenv('FRONTEND_BASE_URL', 'http://localhost:5173')
 
   # JWTの検索場所をヘッダーのみに限定
   JWT_TOKEN_LOCATION = ['headers']
