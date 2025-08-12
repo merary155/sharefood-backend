@@ -1,0 +1,12 @@
+# メール送信設定（Gmail）
+MAIL_SERVER=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USE_TLS=True
+MAIL_USERNAME=sharefoodsapoto@gmail.com
+MAIL_PASSWORD=Passmawashibo@
+MAIL_DEFAULT_SENDER=sharefoodsapoto@gmail.com
+
+# その他アプリ用
+SECRET_KEY=your-secret-key
+JWT_SECRET_KEY=your-jwt-secret-key
+FRONTEND_BASE_URL=http://localhost:3000

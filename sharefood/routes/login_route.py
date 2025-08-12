@@ -24,6 +24,10 @@ def login():
   # Userの中にuser(email)があるか、またUserの中にハッシュ化されたPWと一致するかを確認
   if not user or not user.check_password(validated_data['password']):
     return jsonify({'message': 'メールアドレスまたはパスワードが正しくありません'}), 401
+
+  # メールアドレスが認証済みかチェック
+  if not user.is_verified:
+    return jsonify({'message': 'メールアドレスが認証されていません。メールを確認してください。'}), 403 # 403 Forbidden
   
   # emailとPWに問題なければJWTトークン生成
   access_token = create_access_token(identity=str(user.id))

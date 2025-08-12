@@ -1,4 +1,6 @@
-from flask import Blueprint, jsonify, request
+import os
+from flask import Blueprint, jsonify, request, current_app
+from werkzeug.utils import secure_filename
 from marshmallow import ValidationError
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from .. import db
@@ -10,54 +12,33 @@ bp = Blueprint('item_route', __name__, url_prefix='/api/v1/items')
 @bp.route('/', methods=['POST'])
 @jwt_required()
 def create_item():
-  form = request.form
-  # formdataは辞書のように使えるからdictで取り出す
-  data = {
-    'name': form.get('name'),
-    'description': form.get('description'),
-    'quantity': form.get('quantity'),
-    'unit': form.get('unit'),
-    'expiration_date': form.get('expiration_date'),
-    'location': form.get('location'),
-  }
-  
-  # 必要に応じて空文字をNoneに変換（optional）
-  for k, v in data.items():
-    if v == '':
-      data[k] = None
-
+  # multipart/form-data からテキストデータを取得
+  data = request.form.to_dict()
+ 
   try:
     validated_data = item_schema.load(data)
   except ValidationError as err:
     return jsonify({'message': '入力データが無効です', 'errors': err.messages}), 422
   
   current_user_id = int(get_jwt_identity())
+  validated_data['user_id'] = current_user_id
+  new_item = Item(**validated_data)
   
-  new_item = Item(
-    name=validated_data['name'],
-    quantity=validated_data['quantity'],
-    user_id=current_user_id
-  )
-  
-  # オプショナルなフィールド設定
-  if 'description' in validated_data:
-    new_item.description = validated_data['description']
-  if 'unit' in validated_data:
-    new_item.unit = validated_data['unit']
-  if 'expiration_date' in validated_data:
-    new_item.expiration_date = validated_data['expiration_date']
-  if 'location' in validated_data:
-    new_item.location = validated_data['location']
-  if 'latitude' in validated_data:
-    new_item.latitude = validated_data['latitude']
-  if 'longitude' in validated_data:
-    new_item.longitude = validated_data['longitude']
-  
+  # 画像ファイルの処理
+  # フロントエンドからは 'image' というキーでファイルを送信することを想定
+  if 'image' in request.files:
+    file = request.files['image']
+    # ファイルが存在し、ファイル名が空でないことを確認
+    if file and file.filename != '':
+      filename = secure_filename(file.filename)
+      save_path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+      file.save(save_path)
+      new_item.img_url = filename # ファイル名をDBに保存
+
   db.session.add(new_item)
   db.session.commit()
   
   return jsonify({'message': '食品が正常に出品されました', 'item': item_schema.dump(new_item)}), 201
-  
   
 # --- アイテムを1件のみ詳細取得 ---
 @bp.route('/<int:item_id>', methods=['GET'])
@@ -121,4 +102,19 @@ def delete_item(item_id): # この引数はURLから取得される
   db.session.delete(item)
   db.session.commit()
   return jsonify({'message': '食品を削除しました'}), 200
+
+# --- 一時出品停止・出品再開 ---
+@bp.route('/<int:item_id>/toggle-availability', methods=['POST'])
+@jwt_required()
+def toggle_availability(item_id):
+  current_user_id = int(get_jwt_identity())
+  item = Item.query.filter_by(id = item_id, user_id = current_user_id).first()
+
+  if not item:
+    return jsonify({'success': False, 'message': '商品が見つかりません'}), 404
+
+  item.is_available = not item.is_available # ここでitemの'True|False'を切り替えて代入　※'is_available'が'boolean'
+  db.session.commit()
+
+  return jsonify({'success': True, 'is_available': item.is_available}), 200
 

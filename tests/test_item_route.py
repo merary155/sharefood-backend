@@ -1,32 +1,6 @@
-import pytest
-from flask_jwt_extended import create_access_token
-from sharefood import db, bcrypt
-from sharefood.models import User, Item
-
-
-# --- ヘルパー関数 ---
-def create_test_user(username="testuser", email="test@example.com", password="password"):
-  user = User(
-    username=username,
-    email_address=email,
-    password_hash=bcrypt.generate_password_hash(password).decode('utf-8')
-  )
-  db.session.add(user)
-  db.session.commit()
-  return user
-
-
-def create_test_item(user, name="テスト商品", description="テスト説明", quantity=5):
-  item = Item(name=name, description=description, quantity=quantity, user_id=user.id)
-  db.session.add(item)
-  db.session.commit()
-  return item
-
-
-def get_auth_header(user_id):
-  access_token = create_access_token(identity=str(user_id))
-  return {"Authorization": f"Bearer {access_token}"}
-
+from sharefood import db
+from .helpers import create_test_user, get_auth_header, create_test_item
+from sharefood.models import Item
 
 # --- POST /items のテスト ---
 class TestItemRoute:
@@ -42,7 +16,7 @@ class TestItemRoute:
       "description": "新鮮なリンゴです",
       "unit": "個"
     }
-    response = client.post('/api/v1/items/', json=payload, headers=auth_header)
+    response = client.post('/api/v1/items/', data=payload, headers=auth_header)
     data = response.get_json()
 
     assert response.status_code == 201
@@ -55,7 +29,7 @@ class TestItemRoute:
       auth_header = get_auth_header(user.id)
 
     payload = {"description": "説明だけ"}
-    response = client.post('/api/v1/items/', json=payload, headers=auth_header)
+    response = client.post('/api/v1/items/', data=payload, headers=auth_header)
     data = response.get_json()
 
     assert response.status_code == 422
@@ -64,7 +38,7 @@ class TestItemRoute:
 
   def test_create_item_unauthorized(self, client):
     payload = {"name": "リンゴ", "quantity": 5}
-    response = client.post('/api/v1/items/', json=payload)
+    response = client.post('/api/v1/items/', data=payload)
     assert response.status_code == 401
 
   def test_create_item_invalid_quantity(self, client):
@@ -73,7 +47,7 @@ class TestItemRoute:
       auth_header = get_auth_header(user.id)
 
     payload = {"name": "Invalid", "quantity": 0}
-    response = client.post('/api/v1/items/', json=payload, headers=auth_header)
+    response = client.post('/api/v1/items/', data=payload, headers=auth_header)
     data = response.get_json()
     assert response.status_code == 422
     assert "quantity" in data["errors"]
@@ -84,7 +58,7 @@ class TestItemRoute:
       auth_header = get_auth_header(user.id)
 
     payload = {"name": "", "quantity": 5}
-    response = client.post('/api/v1/items/', json=payload, headers=auth_header)
+    response = client.post('/api/v1/items/', data=payload, headers=auth_header)
     data = response.get_json()
     assert response.status_code == 422
     assert "name" in data["errors"]
@@ -95,7 +69,7 @@ class TestItemRoute:
       auth_header = get_auth_header(user.id)
 
     payload = {"name": "No Desc", "quantity": 10}
-    response = client.post('/api/v1/items/', json=payload, headers=auth_header)
+    response = client.post('/api/v1/items/', data=payload, headers=auth_header)
     data = response.get_json()
     assert response.status_code == 201
     assert data["item"]["description"] is None

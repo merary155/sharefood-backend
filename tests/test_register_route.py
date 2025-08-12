@@ -1,6 +1,6 @@
 import pytest
 import json
-from sharefood import db
+from .helpers import create_test_user
 from sharefood.models import User
 
 class TestRegisterRoute:
@@ -20,7 +20,7 @@ class TestRegisterRoute:
         data = response.get_json()
 
         assert response.status_code == 201
-        assert data['message'] == 'ユーザーが正常に作成されました'
+        assert data['message'] == 'ユーザー登録が完了しました。登録されたメールアドレスに送られた認証メールを確認してください。'
 
         # データベースにユーザーが正しく作成されたか確認
         user = User.query.filter_by(email_address='new@example.com').first()
@@ -30,12 +30,9 @@ class TestRegisterRoute:
 
     def test_register_email_conflict(self, client):
         """既に存在するメールアドレスでの登録が失敗することを確認 (409 Conflict)"""
-        # 事前に同じメールアドレスのユーザーを作成
+        # 事前に「認証済み」のユーザーを作成
         with client.application.app_context():
-            existing_user = User(username='testuser', email_address='test@example.com')
-            existing_user.password = 'Password123'
-            db.session.add(existing_user)
-            db.session.commit()
+            create_test_user(email='test@example.com', is_verified=True)
         
         # 同じメールアドレスで登録を試みる
         response = client.post(
@@ -50,6 +47,32 @@ class TestRegisterRoute:
         data = response.get_json()
         assert response.status_code == 409
         assert data['message'] == 'このメールアドレスは既に使用されています'
+
+    def test_register_unverified_user_resends_email(self, client):
+        """未認証のユーザーが再登録しようとした際に、認証メールが再送されることを確認 (200 OK)"""
+        # 事前に「未認証」のユーザーを作成
+        with client.application.app_context():
+            create_test_user(email='unverified@example.com', is_verified=False)
+
+        # 同じメールアドレスで再登録を試みる
+        response = client.post(
+            '/api/v1/register',
+            data=json.dumps({
+                'username': 'newusername',
+                'email_address': 'unverified@example.com',
+                'password': 'NewPassword123'
+            }),
+            content_type='application/json'
+        )
+        data = response.get_json()
+
+        assert response.status_code == 200
+        assert '新しい認証メールを送信しました' in data['message']
+
+        # ユーザー情報が更新されたか確認
+        user = User.query.filter_by(email_address='unverified@example.com').first()
+        assert user.username == 'newusername'
+        assert user.check_password('NewPassword123')
 
     @pytest.mark.parametrize("payload, error_field, error_message", [
         # --- 必須フィールド欠落 ---
