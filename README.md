@@ -27,13 +27,9 @@
 - テストフレームワーク: pytest, unittest  
 - DB: SQLite  
 
-**インフラ:** AWS(Route53 / Certificate Manager / ALB / VPC / ECR / ECS Fargate / RDS MySQL / S3) / Nginx / Vercel
-
 **CI / CD:** GitHub Actions
 
 **環境構築:** Docker / Docker Compose
-
-**認証:** Firebase Authentication
 
 ## 主要対応一覧
 
