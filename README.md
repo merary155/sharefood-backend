@@ -37,4 +37,4 @@
 
 #### 機能
 
-### [Qiita](https://qiita.com/merary155)
+### <a href="https://qiita.com/merary155" target="_blank" rel="noopener noreferrer">Qiita</a>
